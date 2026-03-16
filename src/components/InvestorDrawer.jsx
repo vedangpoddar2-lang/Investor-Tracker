@@ -321,9 +321,21 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
 
                     {/* Danger zone */}
                     <div className="drawer-section drawer-danger">
-                        <button className="btn btn-danger btn-sm" onClick={handleDeleteInvestor}>
-                            <Trash2 size={14} /> Delete Investor
-                        </button>
+                        {!showDeleteConfirm ? (
+                            <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteConfirm(true)}>
+                                <Trash2 size={14} /> Delete Investor
+                            </button>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-primary)' }}>
+                                    Are you sure? This will delete all history and to-dos.
+                                </p>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button className="btn btn-danger btn-sm" onClick={handleDeleteInvestor}>Confirm Delete</button>
+                                    <button className="btn btn-secondary btn-sm" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </motion.div>

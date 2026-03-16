@@ -12,9 +12,9 @@ import TodoView from './views/TodoView';
 import './App.css';
 
 const TABS = [
-  { id: 'table', label: 'Table', icon: Table },
-  { id: 'kanban', label: 'Pipeline', icon: Columns3 },
-  { id: 'todos', label: 'To-Dos', icon: CheckSquare },
+  { id: 'table', label: 'Table' },
+  { id: 'kanban', label: 'Pipeline' },
+  { id: 'todos', label: 'To-dos' },
 ];
 
 export default function App() {
@@ -52,12 +52,9 @@ export default function App() {
     <div className="app">
       {/* Header */}
       <header className="app-header">
-        <div className="app-header-left">
-          <Briefcase size={22} className="app-logo-icon" />
-          <div>
-            <h1 className="app-title">Investor Pipeline</h1>
-            <p className="app-subtitle">Apex · FluidCore</p>
-          </div>
+        <div className="app-header-titles">
+          <h1 className="app-title">Investor outreach</h1>
+          <p className="app-subtitle">Apex Data Centers & FluidCore — outreach tracker</p>
         </div>
         <nav className="app-tabs">
           {TABS.map((tab) => (
@@ -66,15 +63,14 @@ export default function App() {
               className={`app-tab ${activeTab === tab.id ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
-              <tab.icon size={16} />
               {tab.label}
             </button>
           ))}
         </nav>
       </header>
 
-      {/* Stats */}
-      <StatsBar refreshKey={refreshKey} />
+      {/* Stats - User requested to match image where stats are not visible as large boxes, commenting out for now */}
+      {/* <StatsBar refreshKey={refreshKey} /> */}
 
       {/* Search & Filter */}
       {activeTab !== 'todos' && (

@@ -2,11 +2,11 @@
 
 :root {
   /* Colors — clean, warm, professional */
-  --bg-primary: #FAFAFA;
+  --bg-primary: #FFFFFF;
   --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F3F4F6;
-  --bg-hover: #F0F1F3;
-  --bg-active: #E8EAED;
+  --bg-tertiary: #F9FAFB;
+  --bg-hover: #F3F4F6;
+  --bg-active: #E5E7EB;
 
   --text-primary: #111827;
   --text-secondary: #4B5563;
@@ -37,9 +37,12 @@
   --stage-committed: #059669;
 
   /* Entity colors */
-  --entity-apex: #6366F1;
-  --entity-fluidcore: #EC4899;
+  --entity-apex: #E11D48;
+  /* Red */
+  --entity-fluidcore: #DB2777;
+  /* Pink */
   --entity-both: #8B5CF6;
+  /* Purple */
 
   /* Staleness */
   --stale-warning: #FEF3C7;
@@ -269,7 +272,7 @@ body {
 }
 
 .badge-apex {
-  background: #EEF2FF;
+  background: #FEF2F2;
   color: var(--entity-apex);
 }
 
