@@ -1,0 +1,224 @@
+.drawer-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.drawer-name {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.drawer-name-input {
+    font-size: var(--font-lg);
+    font-weight: 600;
+}
+
+.drawer-fund {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.drawer-badges {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.badge-stale {
+    font-size: 0.6875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.badge-stale.stale-warning {
+    background: var(--stale-warning);
+    color: #92400E;
+}
+
+.badge-stale.stale-danger {
+    background: var(--stale-danger);
+    color: #991B1B;
+}
+
+.drawer-header-actions {
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+}
+
+.drawer-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.drawer-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2) var(--space-6);
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: var(--font-sm);
+}
+
+.meta-label {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.drawer-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-top: var(--space-3);
+}
+
+/* To-Dos */
+.drawer-todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: var(--space-3);
+}
+
+.drawer-todo-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.drawer-todo-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.drawer-todo-item.done .drawer-todo-text {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+}
+
+.drawer-todo-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.drawer-todo-text {
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+}
+
+.drawer-todo-due {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.drawer-todo-due.overdue {
+    color: var(--accent-danger);
+    font-weight: 600;
+}
+
+/* Add form */
+.drawer-add-form {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.drawer-add-form .input,
+.drawer-add-form .textarea {
+    font-size: var(--font-sm);
+}
+
+/* Timeline */
+.drawer-timeline {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-4);
+    gap: 0;
+}
+
+.timeline-item {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-2);
+    position: relative;
+    align-items: flex-start;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--space-2) + 5px);
+    top: calc(var(--space-3) + 14px);
+    bottom: calc(-1 * var(--space-3));
+    width: 1px;
+    background: var(--border-light);
+}
+
+.timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.timeline-date {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.timeline-notes {
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.timeline-delete {
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.timeline-item:hover .timeline-delete {
+    opacity: 1;
+}
+
+.drawer-empty {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+    padding: var(--space-4);
+    text-align: center;
+}
+
+.drawer-danger {
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--space-4);
+}

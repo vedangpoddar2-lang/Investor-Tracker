@@ -1,0 +1,132 @@
+.stats-bar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    gap: var(--space-6);
+    align-items: center;
+}
+
+.stats-cards {
+    display: flex;
+    gap: var(--space-1);
+    flex-shrink: 0;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.stat-card:hover {
+    background: var(--bg-tertiary);
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+}
+
+.stat-value {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.funnel-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.funnel-segment {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 18px;
+    position: relative;
+}
+
+.funnel-fill {
+    height: 100%;
+    border-radius: var(--radius-sm);
+    transition: width 0.4s ease;
+    min-width: 0;
+}
+
+.funnel-first-reach {
+    background: var(--stage-first-reach);
+    opacity: 0.2;
+}
+
+.funnel-follow-up {
+    background: var(--stage-follow-up);
+    opacity: 0.2;
+}
+
+.funnel-nda {
+    background: var(--stage-nda);
+    opacity: 0.2;
+}
+
+.funnel-diligence {
+    background: var(--stage-diligence);
+    opacity: 0.2;
+}
+
+.funnel-passed {
+    background: var(--stage-passed);
+    opacity: 0.2;
+}
+
+.funnel-committed {
+    background: var(--stage-committed);
+    opacity: 0.2;
+}
+
+.funnel-label {
+    font-size: 0.625rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    white-space: nowrap;
+    width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.funnel-count {
+    font-size: 0.625rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    width: 16px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+    .stats-bar {
+        flex-direction: column;
+    }
+
+    .stats-cards {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .funnel-bar {
+        width: 100%;
+    }
+}

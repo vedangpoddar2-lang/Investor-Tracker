@@ -1,0 +1,132 @@
+.todo-view {
+    max-width: 800px;
+}
+
+.todo-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.todo-view-title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.todo-view-count {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.todo-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    transition: background var(--transition-fast);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.todo-row:last-child {
+    border-bottom: none;
+}
+
+.todo-row:hover {
+    background: var(--bg-hover);
+}
+
+.todo-row.todo-overdue {
+    background: var(--stale-danger);
+}
+
+.todo-row.todo-overdue:hover {
+    background: #FECACA;
+}
+
+.todo-row.todo-done {
+    opacity: 0.6;
+}
+
+.todo-row.todo-done .todo-row-text {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+}
+
+.todo-row-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.todo-row-text {
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.todo-row-investor {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--font-xs);
+    color: var(--accent-primary);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.todo-row-investor:hover {
+    text-decoration: underline;
+    color: var(--accent-primary-hover);
+}
+
+.todo-row-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.todo-row-due {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.todo-row-due.overdue {
+    color: var(--accent-danger);
+    font-weight: 600;
+}
+
+.todo-overdue-icon {
+    color: var(--accent-danger);
+}
+
+.todo-divider {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: var(--space-6) 0 var(--space-3);
+}
+
+.todo-list-done {
+    opacity: 0.7;
+}

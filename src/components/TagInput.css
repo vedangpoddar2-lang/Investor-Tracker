@@ -1,0 +1,70 @@
+.tag-input-wrapper {
+    position: relative;
+}
+
+.tag-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    min-height: 36px;
+    align-items: center;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    cursor: text;
+}
+
+.tag-input-container:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-light);
+}
+
+.tag-text-input {
+    border: none;
+    outline: none;
+    background: none;
+    font-family: var(--font-family);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    flex: 1;
+    min-width: 60px;
+    padding: 2px 4px;
+}
+
+.tag-text-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+    box-shadow: var(--shadow-lg);
+    z-index: 20;
+    overflow: hidden;
+}
+
+.tag-suggestion {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    text-align: left;
+    font-family: var(--font-family);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.tag-suggestion:hover {
+    background: var(--bg-hover);
+}
