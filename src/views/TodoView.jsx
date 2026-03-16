@@ -76,6 +76,11 @@ export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
                                             <Clock size={10} /> {todo.dueDate}
                                         </span>
                                     )}
+                                    {todo.actionOwner && (
+                                        <span className="todo-row-due" style={{ color: 'var(--accent-primary)' }}>
+                                            👤 {todo.actionOwner}
+                                        </span>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}

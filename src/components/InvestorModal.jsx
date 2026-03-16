@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { addInvestor, updateInvestor, STAGES, ENTITIES, INVESTOR_TYPES } from '../data/store';
+import { addInvestor, updateInvestor, STAGES, ENTITIES, INVESTOR_TYPES, NDA_STATUSES, INFO_SHARED_STATUSES } from '../data/store';
 import TagInput from './TagInput';
 
 export default function InvestorModal({ investor, onClose, onSave }) {
@@ -10,13 +10,15 @@ export default function InvestorModal({ investor, onClose, onSave }) {
         name: investor?.name || '',
         fund: investor?.fund || '',
         entity: investor?.entity || 'Apex',
-        stage: investor?.stage || 'First Reach',
+        stage: investor?.stage || 'Lead',
         investorType: investor?.investorType || '',
         checkSize: investor?.checkSize || '',
         introSource: investor?.introSource || '',
         tags: investor?.tags || [],
-        ndaSigned: investor?.ndaSigned || false,
-        infoShared: investor?.infoShared || false,
+        ndaStatus: investor?.ndaStatus || '',
+        infoShared: investor?.infoShared || '',
+        primaryContact: investor?.primaryContact || '',
+        contactDesignation: investor?.contactDesignation || '',
     });
 
     const handleSubmit = (e) => {
@@ -82,15 +84,53 @@ export default function InvestorModal({ investor, onClose, onSave }) {
 
                         <div className="form-row">
                             <div className="form-group">
+                                <label className="form-label">Primary Contact</label>
+                                <input
+                                    className="input"
+                                    value={form.primaryContact}
+                                    onChange={(e) => update('primaryContact', e.target.value)}
+                                    placeholder="e.g. Jane Doe"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Designation</label>
+                                <input
+                                    className="input"
+                                    value={form.contactDesignation}
+                                    onChange={(e) => update('contactDesignation', e.target.value)}
+                                    placeholder="e.g. Managing Partner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
                                 <label className="form-label">Entity</label>
                                 <select className="select" value={form.entity} onChange={(e) => update('entity', e.target.value)}>
                                     {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Stage</label>
+                                <label className="form-label">Current Status</label>
                                 <select className="select" value={form.stage} onChange={(e) => update('stage', e.target.value)}>
                                     {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label className="form-label">NDA Status</label>
+                                <select className="select" value={form.ndaStatus} onChange={(e) => update('ndaStatus', e.target.value)}>
+                                    <option value="">— Select —</option>
+                                    {NDA_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Info Shared</label>
+                                <select className="select" value={form.infoShared} onChange={(e) => update('infoShared', e.target.value)}>
+                                    <option value="">— Select —</option>
+                                    {INFO_SHARED_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -127,17 +167,6 @@ export default function InvestorModal({ investor, onClose, onSave }) {
                         <div className="form-group">
                             <label className="form-label">Tags</label>
                             <TagInput tags={form.tags} onChange={(tags) => update('tags', tags)} />
-                        </div>
-
-                        <div className="form-row">
-                            <div className="checkbox-wrapper" onClick={() => update('ndaSigned', !form.ndaSigned)}>
-                                <input type="checkbox" checked={form.ndaSigned} readOnly />
-                                <span style={{ fontSize: 'var(--font-sm)' }}>NDA Signed</span>
-                            </div>
-                            <div className="checkbox-wrapper" onClick={() => update('infoShared', !form.infoShared)}>
-                                <input type="checkbox" checked={form.infoShared} readOnly />
-                                <span style={{ fontSize: 'var(--font-sm)' }}>Info Shared</span>
-                            </div>
                         </div>
                     </div>
 

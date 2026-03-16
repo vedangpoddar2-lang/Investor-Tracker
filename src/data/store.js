@@ -25,13 +25,20 @@ function write(key, data) {
 // ── Investors ──
 
 export const STAGES = [
-  'First Reach',
-  'Follow-up',
-  'NDA',
-  'Diligence',
+  'Lead',
+  'Reached out',
+  'Initial call',
+  'Follow up',
+  'NDA signed',
+  'Shared Info',
+  'Reviewing',
   'Passed',
-  'Committed',
+  'Hold'
 ];
+
+export const NDA_STATUSES = ['Executed', 'Under Review', 'Not Sent'];
+
+export const INFO_SHARED_STATUSES = ['Yes', 'No'];
 
 export const ENTITIES = ['Apex', 'FluidCore', 'Both'];
 
@@ -49,16 +56,27 @@ export function addInvestor(data) {
   const investors = read(KEYS.investors);
   const investor = {
     id: generateId(),
+    // Base form fields
     name: data.name || '',
     fund: data.fund || '',
     entity: data.entity || 'Apex',
-    stage: data.stage || 'First Reach',
-    ndaSigned: data.ndaSigned || false,
-    infoShared: data.infoShared || false,
+    stage: data.stage || 'Lead',
+    // Spreadsheet fields
+    primaryContact: data.primaryContact || '',
+    contactDesignation: data.contactDesignation || '',
+    firstOutreachDate: data.firstOutreachDate || '',
+    ndaStatus: data.ndaStatus || '',
+    infoShared: data.infoShared || '',
+    lastInteractionDate: data.lastInteractionDate || '',
+    keyDiscussionPoint: data.keyDiscussionPoint || '',
+    pendingToDos: data.pendingToDos || '',
+    actionOwner: data.actionOwner || '',
+    nextFollowUpDate: data.nextFollowUpDate || '',
+    followUpStatus: data.followUpStatus || '',
+    remarks: data.remarks || '',
+    // Additional historical fields
     tags: data.tags || [],
     investorType: data.investorType || '',
-    checkSize: data.checkSize || '',
-    introSource: data.introSource || '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -139,6 +157,7 @@ export function addTodo(investorId, data) {
     id: generateId(),
     investorId,
     text: data.text || '',
+    actionOwner: data.actionOwner || '',
     done: false,
     dueDate: data.dueDate || '',
     createdAt: new Date().toISOString(),
@@ -174,14 +193,28 @@ export function getAllTags() {
 // ── Staleness helper ──
 
 export function getDaysSinceContact(investorId) {
-  const interactions = getInteractions(investorId);
-  if (interactions.length === 0) {
-    const investor = getInvestor(investorId);
-    if (!investor) return 999;
-    return Math.floor((Date.now() - new Date(investor.createdAt)) / 86400000);
+  const investor = getInvestor(investorId);
+  if (!investor) return 999;
+
+  // 1. Prefer explicit field from table inline tracking
+  if (investor.lastInteractionDate) {
+    return Math.floor((Date.now() - new Date(investor.lastInteractionDate)) / 86400000);
   }
-  const latest = interactions[0].date;
-  return Math.floor((Date.now() - new Date(latest)) / 86400000);
+
+  // 2. Fallback to interactions collection
+  const interactions = getInteractions(investorId);
+  if (interactions.length > 0) {
+    const latest = interactions[0].date;
+    return Math.floor((Date.now() - new Date(latest)) / 86400000);
+  }
+
+  // 3. Fallback to firstOutreachDate tracking
+  if (investor.firstOutreachDate) {
+    return Math.floor((Date.now() - new Date(investor.firstOutreachDate)) / 86400000);
+  }
+
+  // 4. Default baseline fallback
+  return Math.floor((Date.now() - new Date(investor.createdAt)) / 86400000);
 }
 
 // ── Stats ──
@@ -193,9 +226,9 @@ export function getStats() {
 
   return {
     total: investors.length,
-    active: investors.filter((i) => !['Passed', 'Committed'].includes(i.stage)).length,
-    ndaSigned: investors.filter((i) => i.ndaSigned).length,
-    infoShared: investors.filter((i) => i.infoShared).length,
+    active: investors.filter((i) => !['Passed', 'Hold'].includes(i.stage)).length,
+    ndaSigned: investors.filter((i) => i.ndaStatus === 'Executed').length,
+    infoShared: investors.filter((i) => i.infoShared === 'Yes').length,
     overdueTodos: todos.filter((t) => !t.done && t.dueDate && t.dueDate < today).length,
     funnel: STAGES.reduce((acc, stage) => {
       acc[stage] = investors.filter((i) => i.stage === stage).length;
