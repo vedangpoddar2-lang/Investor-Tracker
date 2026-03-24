@@ -3,18 +3,33 @@ import { supabase } from '../lib/supabase';
 import './Login.css';
 
 export default function Login() {
+    const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [message, setMessage] = useState(null);
 
-    const handleLogin = async (e) => {
+    const handleAuth = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setMessage(null);
         try {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+            if (isSignUp) {
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: window.location.origin
+                    }
+                });
+                if (error) throw error;
+                setMessage('Check your email for the confirmation link!');
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -29,11 +44,13 @@ export default function Login() {
                     <div className="login-logo">
                         <span className="logo-text">APEX</span>
                     </div>
-                    <h1 className="login-title">Investor Tracker</h1>
-                    <p className="login-subtitle">Sign in to manage your pipeline</p>
+                    <h1 className="login-title">{isSignUp ? 'Create Account' : 'Sign In'}</h1>
+                    <p className="login-subtitle">
+                        {isSignUp ? 'Join the investor dashboard' : 'Sign in to manage your pipeline'}
+                    </p>
                 </div>
 
-                <form className="login-form" onSubmit={handleLogin}>
+                <form className="login-form" onSubmit={handleAuth}>
                     <div className="form-group">
                         <label className="form-label">Email</label>
                         <input
@@ -58,14 +75,21 @@ export default function Login() {
                     </div>
 
                     {error && <div className="login-error">{error}</div>}
+                    {message && <div className="login-success">{message}</div>}
 
                     <button className="btn btn-primary btn-block" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? (isSignUp ? 'Registering...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign In')}
                     </button>
                 </form>
 
                 <div className="login-footer">
-                    <p>Protected by Supabase Auth</p>
+                    <button
+                        className="btn btn-ghost mode-toggle"
+                        onClick={() => setIsSignUp(!isSignUp)}
+                    >
+                        {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                    </button>
+                    <p className="powered-by">Protected by Supabase Auth</p>
                 </div>
             </div>
         </div>
