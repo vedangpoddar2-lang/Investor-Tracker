@@ -2,6 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-secondary);
 }
 
 /* ── App Header ── */
@@ -29,47 +30,33 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   cursor: pointer;
   user-select: none;
-}
-
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--accent-primary);
-  color: white;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .brand-text {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-heading);
 }
 
 .brand-name {
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: -0.02em;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.02em;
   color: var(--text-primary);
 }
 
 .brand-divider {
-  color: var(--border-medium);
+  color: #E8E8E6;
   font-weight: 300;
 }
 
 .brand-context {
-  font-weight: 500;
-  font-size: 0.75rem;
+  font-weight: 300;
+  font-size: 13px;
   color: var(--text-tertiary);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 /* ── Navigation ── */
@@ -77,44 +64,47 @@
   display: flex;
   align-items: center;
   gap: 32px;
-  /* Clear space between tabs as requested */
 }
 
 .nav-btn {
   background: none;
   border: none;
-  font-size: 0.875rem;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
-  padding: 4px 0;
+  padding: 16px 0;
   position: relative;
   transition: color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .nav-btn:hover {
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .nav-btn.active {
   color: var(--text-primary);
-  font-weight: 600;
 }
 
 .nav-btn.active::after {
   content: '';
   position: absolute;
-  bottom: -18px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--accent-primary);
+  background: var(--text-primary);
 }
 
 /* ── Layout & Main ── */
 .app-main {
   flex: 1;
-  padding-bottom: 40px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 @media (max-width: 768px) {

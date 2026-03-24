@@ -1,140 +1,146 @@
 .kanban-board {
     display: flex;
-    gap: var(--space-6);
-    overflow-x: auto;
+    gap: 20px;
     padding: 24px;
-    min-height: calc(100vh - var(--header-height) - 100px);
+    height: 100%;
+    overflow-x: auto;
+    background-color: var(--bg-primary);
+    align-items: flex-start;
 }
 
 .kanban-column {
-    flex: 1;
-    min-width: 280px;
-    max-width: 350px;
+    flex: 0 0 280px;
     display: flex;
     flex-direction: column;
+    max-height: 100%;
 }
 
 .kanban-column-header {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: 0 var(--space-2) var(--space-4);
+    gap: 8px;
+    padding: 0 4px 12px 4px;
+    margin-bottom: 8px;
 }
 
 .kanban-column-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    flex-shrink: 0;
 }
 
 .kanban-column-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
 }
 
 .kanban-column-count {
-    font-size: 0.7rem;
+    font-size: 11px;
+    font-weight: 500;
     color: var(--text-tertiary);
     background: var(--bg-tertiary);
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
 }
 
 .kanban-column-body {
     flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-3);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    min-height: 100px;
+    gap: 10px;
 }
 
+/* ── Card Styling ── */
 .kanban-card {
     background: white;
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    padding: var(--space-4);
+    border-radius: 8px;
+    padding: 12px;
     cursor: grab;
-    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .kanban-card:hover {
-    box-shadow: var(--shadow-md);
     border-color: var(--border-medium);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
 }
 
 .kanban-card:active {
     cursor: grabbing;
 }
 
-.kanban-card.card-stale-warning {
-    border-left: 3px solid var(--accent-warning);
-}
-
-.kanban-card.card-stale-danger {
-    border-left: 3px solid var(--accent-danger);
-}
-
 .kanban-card-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: var(--space-2);
-    margin-bottom: 4px;
+    align-items: flex-start;
+    margin-bottom: 8px;
 }
 
 .kanban-card-name {
-    font-size: var(--font-sm);
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.4;
 }
 
 .kanban-card-fund {
-    font-size: var(--font-xs);
+    font-size: 12px;
     color: var(--text-secondary);
-    margin-bottom: 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin-bottom: 8px;
 }
 
 .kanban-card-footer {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--bg-tertiary);
 }
 
 .kanban-card-date {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 3px;
-    font-size: 0.6875rem;
+    gap: 4px;
+    font-size: 11px;
     color: var(--text-tertiary);
 }
 
 .kanban-card-type {
-    font-size: 0.625rem;
+    font-size: 11px;
     color: var(--text-tertiary);
     background: var(--bg-tertiary);
-    padding: 1px 6px;
-    border-radius: var(--radius-full);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ── Stale States ── */
+.card-stale-warning {
+    border-left: 3px solid var(--status-amber);
+}
+
+.card-stale-danger {
+    border-left: 3px solid var(--status-rose);
 }
 
 .kanban-empty {
-    font-size: var(--font-xs);
-    color: var(--text-tertiary);
+    padding: 20px;
     text-align: center;
-    padding: var(--space-6) var(--space-4);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border: 1px dashed var(--border-light);
+    border-radius: 8px;
+}
+
+.kanban-loading {
+    padding: 100px;
+    text-align: center;
+    color: var(--text-tertiary);
 }

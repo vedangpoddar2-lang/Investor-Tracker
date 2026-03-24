@@ -150,15 +150,13 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
     };
 
     const stageColors = {
-        'Lead': '#FEF3C7',
-        'Reached out': '#FEF3C7',
-        'Initial call': '#FEF3C7',
-        'Follow up': '#DBEAFE',
-        'NDA signed': '#DBEAFE',
-        'Shared Info': '#D1FAE5',
-        'Reviewing': '#D1FAE5',
-        'Passed': '#FEE2E2',
-        'Hold': '#F3F4F6',
+        'Not Contacted': '#71717A',
+        'Contacted': '#3B82F6',
+        'Intro Call': '#8B5CF6',
+        'NDA Shared': '#D97706',
+        'Deck Shared': '#52A06E',
+        'Term Sheet': '#10B981',
+        'Closed / Dropped': '#E11D48'
     };
 
     if (loading && rawInvestors.length === 0) {

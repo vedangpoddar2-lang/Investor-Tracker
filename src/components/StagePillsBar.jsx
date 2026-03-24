@@ -2,18 +2,18 @@ import { useState, useEffect, useMemo } from 'react';
 import { getInvestors, STAGES } from '../data/store';
 
 // Stage color mapping
-// Stage color mapping - Subtle & Professional
+// Stage color mapping - Muted & Professional (Linear style)
 const STAGE_COLORS = {
-    'Lead': { bg: '#f8fafc', text: '#64748b', dot: '#94a3b8' },
-    'Reached out': { bg: '#f1f5f9', text: '#475569', dot: '#94a3b8' },
-    'Initial call': { bg: '#f1f5f9', text: '#1e293b', dot: '#64748b' },
-    'Follow up': { bg: '#fffbeb', text: '#b45309', dot: '#f59e0b' },
-    'NDA signed': { bg: '#ecfdf5', text: '#047857', dot: '#10b981' },
-    'Shared Info': { bg: '#eff6ff', text: '#1d4ed8', dot: '#3b82f6' },
-    'Reviewing': { bg: '#fdf2f8', text: '#be185d', dot: '#db2777' },
+    'Not Contacted': '#71717A', // Gray
+    'Contacted': '#3B82F6',     // Blue
+    'Intro Call': '#8B5CF6',    // Violet
+    'NDA Shared': '#D97706',    // Amber
+    'Deck Shared': '#52A06E',   // Sage
+    'Term Sheet': '#10B981',    // Emerald
+    'Closed / Dropped': '#E11D48' // Rose
 };
 
-const EXCLUDED = ['Passed', 'Hold'];
+const EXCLUDED = ['Closed / Dropped'];
 
 export default function StagePillsBar({ refreshKey }) {
     const [investors, setInvestors] = useState([]);
@@ -28,31 +28,40 @@ export default function StagePillsBar({ refreshKey }) {
 
     const stageCounts = useMemo(() => {
         return STAGES
-            .filter(s => !EXCLUDED.includes(s))
+            .filter(tag => !EXCLUDED.includes(tag))
             .map(stage => ({
                 stage,
                 count: investors.filter(i => i.stage === stage).length,
-                colors: STAGE_COLORS[stage] || { bg: '#F3F4F6', text: '#6B7280', dot: '#9CA3AF' },
+                color: STAGE_COLORS[stage] || '#71717A',
             }));
     }, [investors]);
 
-    const total = stageCounts.reduce((sum, s) => sum + s.count, 0);
+    const activeTotal = investors.filter(i => !EXCLUDED.includes(i.stage)).length;
 
     return (
         <div className="stage-pills-bar">
             <div className="stage-pills-inner">
-                <span className="stage-pills-total">{total} active</span>
-                {stageCounts.map(({ stage, count, colors }) => (
-                    <span
-                        key={stage}
-                        className="stage-pill"
-                        style={{ background: colors.bg, color: colors.text }}
-                    >
-                        <span className="stage-pill-dot" style={{ background: colors.dot }} />
-                        {stage}
-                        <span className="stage-pill-count">{count}</span>
-                    </span>
-                ))}
+                <div className="active-summary">
+                    <span className="summary-count">{activeTotal}</span>
+                    <span className="summary-label">ACTIVE</span>
+                </div>
+
+                <div className="stage-pills-list">
+                    {stageCounts.map(({ stage, count, color }) => (
+                        <div
+                            key={stage}
+                            className="stage-pill"
+                            style={{
+                                '--pill-color': color,
+                                '--pill-bg': `${color}14` // ~8% opacity
+                            }}
+                        >
+                            <span className="stage-pill-dot" />
+                            <span className="stage-pill-label">{stage}</span>
+                            <span className="stage-pill-count">{count}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

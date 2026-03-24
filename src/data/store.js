@@ -3,15 +3,13 @@ import { supabase } from '../lib/supabase';
 // ── Base Data ──
 
 export const STAGES = [
-  'Lead',
-  'Reached out',
-  'Initial call',
-  'Follow up',
-  'NDA signed',
-  'Shared Info',
-  'Reviewing',
-  'Passed',
-  'Hold'
+  'Not Contacted',
+  'Contacted',
+  'Intro Call',
+  'NDA Shared',
+  'Deck Shared',
+  'Term Sheet',
+  'Closed / Dropped'
 ];
 
 export const NDA_STATUSES = ['Executed', 'Under Review', 'Not Sent'];

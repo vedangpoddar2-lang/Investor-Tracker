@@ -1,48 +1,51 @@
-import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, MessageSquarePlus, Download, ArrowUpDown, FileSpreadsheet } from 'lucide-react';
-import { getInvestors, getAllInteractions, getAllTodos, getDaysSinceContact, updateInvestor, STAGES, NDA_STATUSES, INFO_SHARED_STATUSES, ENTITIES } from '../data/store';
-import { exportCSV } from '../utils/export';
-import ExcelUploadModal from '../components/ExcelUploadModal';
-import './TableView.css';
-
-// Stage color pill config
-const STAGE_PILL_COLORS = {
-    'Lead': { bg: '#FEF3C7', text: '#92400E' },
-    'Reached out': { bg: '#FEF3C7', text: '#92400E' },
-    'Initial call': { bg: '#FEF3C7', text: '#92400E' },
-    'Follow up': { bg: '#DBEAFE', text: '#1E40AF' },
-    'NDA signed': { bg: '#DBEAFE', text: '#1E40AF' },
-    'Shared Info': { bg: '#D1FAE5', text: '#065F46' },
-    'Reviewing': { bg: '#D1FAE5', text: '#065F46' },
-    'Passed': { bg: '#FEE2E2', text: '#991B1B' },
-    'Hold': { bg: '#F3F4F6', text: '#6B7280' },
+// Stage color mapping - Muted & Professional (Linear style)
+const STAGE_COLORS = {
+    'Not Contacted': '#71717A',
+    'Contacted': '#3B82F6',
+    'Intro Call': '#8B5CF6',
+    'NDA Shared': '#D97706',
+    'Deck Shared': '#52A06E',
+    'Term Sheet': '#10B981',
+    'Closed / Dropped': '#E11D48'
 };
+
+function Tooltip({ content, show, x, y }) {
+    if (!show || !content) return null;
+    return (
+        <div className="custom-tooltip" style={{ top: y, left: x }}>
+            {content}
+        </div>
+    );
+}
 
 function StagePill({ value, options, onChange }) {
     const [open, setOpen] = useState(false);
-    const colors = STAGE_PILL_COLORS[value] || { bg: '#F3F4F6', text: '#6B7280' };
+    const color = STAGE_COLORS[value] || '#71717A';
 
     return (
-        <div className="stage-pill-cell" style={{ position: 'relative' }}>
-            <span
+        <div className="stage-pill-cell">
+            <div
                 className="stage-pill-badge"
-                style={{ background: colors.bg, color: colors.text }}
+                style={{
+                    '--pill-color': color,
+                    '--pill-bg': `${color}14`
+                }}
                 onClick={() => setOpen(o => !o)}
             >
+                <div className="stage-pill-dot"></div>
                 {value || '—'}
-            </span>
+            </div>
             {open && (
                 <div className="stage-pill-dropdown">
                     {options.map(opt => {
-                        const c = STAGE_PILL_COLORS[opt] || { bg: '#F3F4F6', text: '#6B7280' };
+                        const c = STAGE_COLORS[opt] || '#71717A';
                         return (
                             <div
                                 key={opt}
                                 className="stage-pill-option"
                                 onClick={() => { onChange(opt); setOpen(false); }}
                             >
-                                <div className="stage-pill-option-dot" style={{ backgroundColor: c.text }}></div>
+                                <div className="stage-pill-option-dot" style={{ backgroundColor: c }}></div>
                                 <span className="stage-pill-option-text">{opt}</span>
                             </div>
                         );
@@ -53,7 +56,7 @@ function StagePill({ value, options, onChange }) {
     );
 }
 
-function EditableCell({ value, type = 'text', options = [], onChange }) {
+function EditableCell({ value, type = 'text', options = [], onChange, onTextMeasure }) {
     const [val, setVal] = useState(value || '');
 
     useEffect(() => {
@@ -62,6 +65,13 @@ function EditableCell({ value, type = 'text', options = [], onChange }) {
 
     const handleBlur = () => {
         if (val !== (value || '')) onChange(val);
+    };
+
+    const handleMouseEnter = (e) => {
+        const target = e.currentTarget;
+        if (target.scrollWidth > target.clientWidth) {
+            onTextMeasure(value, e.clientX, e.clientY);
+        }
     };
 
     if (type === 'select') {
@@ -82,13 +92,17 @@ function EditableCell({ value, type = 'text', options = [], onChange }) {
     }
 
     if (type === 'date') {
+        const displayDate = val ? new Date(val).toLocaleDateString() : '—';
         return (
-            <input
-                type="date"
-                value={val}
-                onChange={(e) => { setVal(e.target.value); onChange(e.target.value); }}
-                className="inline-input"
-            />
+            <div className="date-cell">
+                <input
+                    type="date"
+                    value={val}
+                    onChange={(e) => { setVal(e.target.value); onChange(e.target.value); }}
+                    className="inline-input date-input-hidden"
+                />
+                <span className="date-display">{displayDate}</span>
+            </div>
         );
     }
 
@@ -98,20 +112,55 @@ function EditableCell({ value, type = 'text', options = [], onChange }) {
             value={val}
             onChange={(e) => setVal(e.target.value)}
             onBlur={handleBlur}
+            onMouseEnter={handleMouseEnter}
             className={`inline-input ${val ? '' : 'empty-cell'}`}
             placeholder="—"
         />
     );
 }
 
-export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate }) {
+const DEFAULT_COLUMNS = [
+    { key: 'name', label: 'Investor', type: 'text', width: 200 },
+    { key: 'primary_contact', label: 'Contact', type: 'text', width: 140 },
+    { key: 'contact_designation', label: 'Designation', type: 'text', width: 140 },
+    { key: 'entity', label: 'Reached By', type: 'select', options: ENTITIES, width: 110 },
+    { key: 'stage', label: 'Status', type: 'stage', options: STAGES, width: 160 },
+    { key: 'nda_status', label: 'NDA Status', type: 'select', options: NDA_STATUSES, width: 135 },
+    { key: 'info_shared', label: 'Info Shared', type: 'select', options: INFO_SHARED_STATUSES, width: 125 },
+    { key: 'daysSince', label: 'Days Since', type: 'readonly', width: 90 },
+    { key: 'key_discussion_point', label: 'Key Discuss', type: 'text', width: 220 },
+    { key: 'pending_to_dos', label: 'To-dos', type: 'todos', width: 180 },
+    { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', width: 130 },
+    { key: 'remarks', label: 'Remarks', type: 'text', width: 200 },
+];
+
+export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate, setShowExcelModal }) {
     const [sortCol, setSortCol] = useState('name');
     const [sortDir, setSortDir] = useState('asc');
     const [rawInvestors, setRawInvestors] = useState([]);
     const [rawInteractions, setRawInteractions] = useState([]);
     const [rawTodos, setRawTodos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showExcelModal, setShowExcelModal] = useState(false);
+
+
+    // Advanced Table States
+    const [columnWidths, setColumnWidths] = useState(() => {
+        const saved = localStorage.getItem('apex_table_widths');
+        return saved ? JSON.parse(saved) : DEFAULT_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: col.width }), {});
+    });
+    const [columnOrder, setColumnOrder] = useState(() => {
+        const saved = localStorage.getItem('apex_table_order');
+        return saved ? JSON.parse(saved) : DEFAULT_COLUMNS.map(c => c.key);
+    });
+    const [tooltip, setTooltip] = useState({ show: false, content: '', x: 0, y: 0 });
+
+    useEffect(() => {
+        localStorage.setItem('apex_table_widths', JSON.stringify(columnWidths));
+    }, [columnWidths]);
+
+    useEffect(() => {
+        localStorage.setItem('apex_table_order', JSON.stringify(columnOrder));
+    }, [columnOrder]);
 
     useEffect(() => {
         async function loadData() {
@@ -159,7 +208,6 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         if (filters.entity) list = list.filter(i => i.entity === filters.entity);
         if (filters.stage) list = list.filter(i => i.stage === filters.stage);
         if (filters.ndaStatus) list = list.filter(i => i.nda_status === filters.ndaStatus);
-        if (filters.infoShared) list = list.filter(i => i.info_shared === filters.infoShared);
 
         // Sort
         list.sort((a, b) => {
@@ -186,31 +234,47 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         if (onUpdate) onUpdate();
     };
 
-    const columns = [
-        { key: 'name', label: 'Investor', type: 'text', minWidth: 150 },
-        { key: 'primary_contact', label: 'Primary Contact', type: 'text', minWidth: 140 },
-        { key: 'contact_designation', label: 'Designation', type: 'text', minWidth: 140 },
-        { key: 'entity', label: 'Reached By', type: 'select', options: ENTITIES, minWidth: 110 },
-        { key: 'first_outreach_date', label: 'First Outreach', type: 'date', minWidth: 130 },
-        { key: 'stage', label: 'Current Status', type: 'stage', options: STAGES, minWidth: 160 },
-        { key: 'nda_status', label: 'NDA Status', type: 'select', options: NDA_STATUSES, minWidth: 135 },
-        { key: 'info_shared', label: 'Info Shared', type: 'select', options: INFO_SHARED_STATUSES, minWidth: 125 },
-        { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', minWidth: 130 },
-        { key: 'daysSince', label: 'Days Since', type: 'readonly', minWidth: 100 },
-        { key: 'key_discussion_point', label: 'Key Discussion Point', type: 'text', minWidth: 200 },
-        { key: 'pending_to_dos', label: 'Pending To Dos', type: 'todos', minWidth: 180 },
-        { key: 'action_owner', label: 'Action Owner', type: 'text', minWidth: 130 },
-        { key: 'next_follow_up_date', label: 'Next Follow-up', type: 'date', minWidth: 130 },
-        { key: 'follow_up_status', label: 'Follow-up Status', type: 'text', minWidth: 140 },
-        { key: 'remarks', label: 'Remarks', type: 'text', minWidth: 180 },
-        { key: 'actions', label: '', type: 'actions', minWidth: 50 },
-    ];
+    const handleResize = (key, startX) => {
+        const onMouseMove = (moveEvent) => {
+            const diff = moveEvent.clientX - startX;
+            setColumnWidths(prev => ({
+                ...prev,
+                [key]: Math.max(80, (prev[key] || 150) + diff)
+            }));
+            startX = moveEvent.clientX; // Update startX for smoother movement
+        };
+        const onMouseUp = () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+    };
+
+    const handleDragStart = (e, key) => {
+        e.dataTransfer.setData('colKey', key);
+    };
+
+    const handleDrop = (e, targetKey) => {
+        const draggedKey = e.dataTransfer.getData('colKey');
+        if (draggedKey === targetKey) return;
+
+        const newOrder = [...columnOrder];
+        const draggedIdx = newOrder.indexOf(draggedKey);
+        const targetIdx = newOrder.indexOf(targetKey);
+        newOrder.splice(draggedIdx, 1);
+        newOrder.splice(targetIdx, 0, draggedKey);
+        setColumnOrder(newOrder);
+    };
 
     const staleClass = (days) => {
-        if (days >= 14) return 'row-stale-danger';
-        if (days >= 7) return 'row-stale-warning';
-        return '';
+        if (days >= 15) return 'stale-critical';
+        if (days >= 10) return 'stale-warning';
+        if (days >= 5) return 'stale-subtle';
+        return 'stale-none';
     };
+
+    const orderedColumns = columnOrder.map(key => DEFAULT_COLUMNS.find(c => c.key === key)).filter(Boolean);
 
     if (loading && rawInvestors.length === 0) {
         return <div className="loading-state">Loading data from Supabase...</div>;
@@ -218,156 +282,124 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
 
     return (
         <div className="table-view">
-            <div className="table-actions">
-                <button className="btn btn-secondary" onClick={() => setShowExcelModal(true)}>
-                    <FileSpreadsheet size={14} /> Import Excel
-                </button>
-                <button className="btn btn-secondary" onClick={() => exportCSV(investors)}>
-                    <Download size={14} /> Export CSV
-                </button>
-                <span className="table-count">{investors.length} investor{investors.length !== 1 ? 's' : ''}</span>
-            </div>
 
-            <div className="table-wrapper">
-                <table className="data-table spreadsheet-table">
+            <div className="table-wrapper" onMouseLeave={() => setTooltip({ show: false })}>
+                <table className="spreadsheet-table" style={{ width: 'max-content' }}>
                     <thead>
                         <tr>
-                            {columns.map((col) => (
+                            {orderedColumns.map((col) => (
                                 <th
                                     key={col.key}
-                                    style={{ minWidth: col.minWidth }}
-                                    onClick={() => col.key !== 'actions' && handleSort(col.key)}
+                                    style={{ width: columnWidths[col.key] || col.width }}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, col.key)}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => handleDrop(e, col.key)}
                                 >
-                                    <span className="th-content">
-                                        {col.label}
+                                    <div className="th-content" onClick={() => handleSort(col.key)}>
+                                        <span className="th-label">{col.label}</span>
                                         {sortCol === col.key && (
-                                            <ArrowUpDown size={12} className={`sort-icon ${sortDir}`} />
+                                            <ArrowUpDown size={10} className={`sort-icon ${sortDir}`} />
                                         )}
-                                    </span>
+                                    </div>
+                                    <div
+                                        className="resizer"
+                                        onMouseDown={(e) => { e.stopPropagation(); handleResize(col.key, e.clientX); }}
+                                    />
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         <AnimatePresence>
-                            {investors.length === 0 ? (
-                                <tr>
-                                    <td colSpan={columns.length} className="table-empty">
-                                        {loading ? 'Refreshing...' : 'No investors found. Add your first one!'}
-                                    </td>
-                                </tr>
-                            ) : (
-                                investors.map((inv, idx) => (
-                                    <motion.tr
-                                        key={inv.id}
-                                        className={`data-row ${staleClass(inv.daysSince)}`}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ delay: idx * 0.02 }}
-                                        layout
-                                    >
-                                        {columns.map((col) => {
-                                            // Actions column
-                                            if (col.key === 'actions') {
-                                                return (
-                                                    <td key={col.key} className="col-actions">
-                                                        <button className="btn btn-ghost btn-icon btn-sm" title="Quick log"
-                                                            onClick={(e) => { e.stopPropagation(); onQuickLog(inv.id, inv.name); }}>
-                                                            <MessageSquarePlus size={14} />
-                                                        </button>
-                                                    </td>
-                                                );
-                                            }
+                            {investors.map((inv, idx) => (
+                                <motion.tr
+                                    key={inv.id}
+                                    className="data-row"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ delay: idx * 0.01 }}
+                                >
+                                    {orderedColumns.map((col) => {
+                                        // Days since — color coded thresholds
+                                        if (col.key === 'daysSince') {
+                                            const days = inv.daysSince;
+                                            return (
+                                                <td key={col.key} className={`col-readonly ${staleClass(days)}`}>
+                                                    {days < 999 ? days + 'd' : '—'}
+                                                </td>
+                                            );
+                                        }
 
-                                            // Days since — readonly
-                                            if (col.key === 'daysSince') {
-                                                return (
-                                                    <td key={col.key} className="col-readonly">
-                                                        {inv.daysSince < 999 ? inv.daysSince + 'd' : '—'}
-                                                    </td>
-                                                );
-                                            }
+                                        // Investor name — clickable link
+                                        if (col.key === 'name') {
+                                            return (
+                                                <td key={col.key} className="col-name">
+                                                    <span
+                                                        className="investor-name-link"
+                                                        onClick={() => onOpenDrawer(inv.id)}
+                                                    >
+                                                        {inv[col.key] || 'Unknown'}
+                                                    </span>
+                                                </td>
+                                            );
+                                        }
 
-                                            // Investor name — clickable link
-                                            if (col.key === 'name') {
-                                                return (
-                                                    <td key={col.key} className="cell-flex" style={{ padding: 0 }}>
-                                                        <div
-                                                            className="investor-link-wrapper"
-                                                            onClick={() => onOpenDrawer(inv.id)}
-                                                            title="Open full details"
-                                                        >
-                                                            <span className="investor-name-link">{inv[col.key] || 'Unknown'}</span>
-                                                        </div>
-                                                    </td>
-                                                );
-                                            }
-
-                                            // Pending To Dos — computed from actual todos
-                                            if (col.key === 'pending_to_dos') {
-                                                const hasTodos = inv._pendingTodosCount > 0;
-                                                return (
-                                                    <td key={col.key}>
-                                                        {hasTodos ? (
-                                                            <div
-                                                                className="todo-link-cell"
-                                                                onClick={(e) => { e.stopPropagation(); onOpenDrawer(inv.id, 'todos'); }}
-                                                                title="Click to view/edit in drawer"
-                                                            >
-                                                                <span className="todo-count-badge">{inv._pendingTodosCount}</span>
-                                                                <span className="todo-preview-text">{inv._pendingTodosText}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="empty-todo-cell" onClick={(e) => { e.stopPropagation(); onOpenDrawer(inv.id, 'todos'); }}>
-                                                                <span className="empty-cell" style={{ cursor: 'pointer' }}>Add to-do...</span>
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                );
-                                            }
-
-                                            // Stage — colored pill
-                                            if (col.key === 'stage') {
-                                                return (
-                                                    <td key={col.key} className="stage-pill-td">
-                                                        <StagePill
-                                                            value={inv.stage}
-                                                            options={col.options}
-                                                            onChange={(v) => handleUpdateField(inv.id, 'stage', v)}
-                                                        />
-                                                    </td>
-                                                );
-                                            }
-
-                                            // Default editable cell
+                                        // Pending To Dos
+                                        if (col.key === 'pending_to_dos') {
+                                            const hasTodos = inv._pendingTodosCount > 0;
                                             return (
                                                 <td key={col.key}>
-                                                    <EditableCell
-                                                        value={inv[col.key]}
-                                                        type={col.type}
+                                                    {hasTodos ? (
+                                                        <div className="todo-cell" onClick={() => onOpenDrawer(inv.id, 'todos')}>
+                                                            <span className="todo-count-badge">{inv._pendingTodosCount}</span>
+                                                            <span className="todo-preview-text">{inv._pendingTodosText}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="empty-cell" onClick={() => onOpenDrawer(inv.id, 'todos')}>Add...</span>
+                                                    )}
+                                                </td>
+                                            );
+                                        }
+
+                                        // Stage — colored pill
+                                        if (col.key === 'stage') {
+                                            return (
+                                                <td key={col.key} className="stage-pill-td">
+                                                    <StagePill
+                                                        value={inv.stage}
                                                         options={col.options}
-                                                        onChange={(v) => handleUpdateField(inv.id, col.key, v)}
+                                                        onChange={(v) => handleUpdateField(inv.id, 'stage', v)}
                                                     />
                                                 </td>
                                             );
-                                        })}
-                                    </motion.tr>
-                                ))
-                            )}
+                                        }
+
+                                        // Default editable cell
+                                        return (
+                                            <td key={col.key}>
+                                                <EditableCell
+                                                    value={inv[col.key]}
+                                                    type={col.type}
+                                                    options={col.options}
+                                                    onChange={(v) => handleUpdateField(inv.id, col.key, v)}
+                                                    onTextMeasure={(content, x, y) => setTooltip({ show: true, content, x: x + 10, y: y + 10 })}
+                                                />
+                                            </td>
+                                        );
+                                    })}
+                                </motion.tr>
+                            ))}
                         </AnimatePresence>
                     </tbody>
                 </table>
             </div>
 
-            <AnimatePresence>
-                {showExcelModal && (
-                    <ExcelUploadModal
-                        onClose={() => setShowExcelModal(false)}
-                        onSave={onUpdate}
-                    />
-                )}
-            </AnimatePresence>
+            <Tooltip {...tooltip} />
+
         </div>
     );
 }
+
+

@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { getInvestors, STAGES, getDaysSinceContact } from './data/store';
+import { exportCSV } from './utils/export';
 import SearchFilter from './components/SearchFilter';
 import InvestorModal from './components/InvestorModal';
 import QuickLogModal from './components/QuickLogModal';
@@ -51,19 +53,33 @@ export default function App() {
     setQuickLogTarget({ id: investorId, name: investorName });
   };
 
+  const handleExport = async () => {
+    const raw = await getInvestors();
+    let list = raw.map(inv => ({
+      ...inv,
+      daysSince: getDaysSinceContact(inv)
+    }));
+
+    // Apply basic search/filter for export (match table logic)
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(inv =>
+        inv.name.toLowerCase().includes(q) ||
+        (inv.primary_contact || '').toLowerCase().includes(q)
+      );
+    }
+    if (filters.entity) list = list.filter(i => i.entity === filters.entity);
+    if (filters.stage) list = list.filter(i => i.stage === filters.stage);
+
+    exportCSV(list);
+  };
+
   return (
     <div className="app">
-      {/* Slim Premium Header */}
+      {/* Linear-style Slim Header */}
       <header className="app-header">
         <div className="header-container">
           <div className="brand" onClick={() => setActiveTab('table')}>
-            <div className="logo-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6L12 3L20 6L12 9L4 6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                <path d="M4 11L12 8L20 11L12 14L4 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                <path d="M4 16L12 13L20 16L12 19L4 16Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-              </svg>
-            </div>
             <div className="brand-text">
               <span className="brand-name">APEX</span>
               <span className="brand-divider">/</span>
@@ -84,7 +100,7 @@ export default function App() {
           </nav>
 
           <div className="header-actions">
-            <button className="btn btn-primary btn-sm" onClick={() => handleOpenModal()}>
+            <button className="btn btn-primary" onClick={() => handleOpenModal()}>
               + Add Investor
             </button>
           </div>
@@ -94,9 +110,14 @@ export default function App() {
       {/* Stage pills bar */}
       {activeTab === 'table' && <StagePillsBar refreshKey={refreshKey} />}
 
-      {/* Search & Filter */}
-      {activeTab === 'table' && (
-        <SearchFilter filters={filters} onFilterChange={setFilters} />
+      {/* Unified Toolbar (Search & Filter) */}
+      {(activeTab === 'table' || activeTab === 'kanban') && (
+        <SearchFilter
+          filters={filters}
+          onFilterChange={setFilters}
+          onImport={activeTab === 'table' ? () => setShowInvestorModal(true) : null}
+          onExport={activeTab === 'table' ? handleExport : null}
+        />
       )}
 
       {/* Active View */}
@@ -109,6 +130,7 @@ export default function App() {
             onQuickLog={handleQuickLog}
             refreshKey={refreshKey}
             onUpdate={refresh}
+            setShowExcelModal={setShowExcelModal}
           />
         )}
         {activeTab === 'kanban' && (
