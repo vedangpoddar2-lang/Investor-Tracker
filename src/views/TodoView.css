@@ -20,9 +20,9 @@
 }
 
 .todo-view-count {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-tertiary);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .todo-list {
@@ -53,11 +53,12 @@
 }
 
 .todo-row.todo-overdue {
-    background: var(--stale-danger);
+    background: rgba(225, 29, 72, 0.03);
+    border-left: 3px solid var(--status-rose);
 }
 
 .todo-row.todo-overdue:hover {
-    background: #FECACA;
+    background: rgba(225, 29, 72, 0.06);
 }
 
 .todo-row.todo-done {
@@ -78,9 +79,10 @@
 }
 
 .todo-row-text {
-    font-size: var(--font-sm);
+    font-size: 15px;
     color: var(--text-primary);
     font-weight: 500;
+    line-height: 1.4;
 }
 
 .todo-row-investor {
@@ -108,15 +110,15 @@
 .todo-row-due {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    font-size: var(--font-xs);
+    gap: 4px;
+    font-size: 12px;
     color: var(--text-tertiary);
     white-space: nowrap;
 }
 
 .todo-row-due.overdue {
-    color: var(--accent-danger);
-    font-weight: 600;
+    color: var(--status-rose);
+    font-weight: 700;
 }
 
 .todo-overdue-icon {

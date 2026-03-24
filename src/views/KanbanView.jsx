@@ -126,29 +126,33 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
         }));
     }, [rawInvestors, rawInteractions, filters]);
 
-    const handleDragEnd = async (event) => {
+    const handleDragOver = (event) => {
         const { active, over } = event;
         if (!over) return;
 
-        // Find which column the item was dropped into
-        const overStage = over.data?.current?.stage;
+        const overStage = over.data?.current?.stage || over.id;
         const activeInvestor = rawInvestors.find((i) => i.id === active.id);
-        if (!activeInvestor) return;
 
-        // If dropped on a card, use that card's stage
-        let targetStage;
-        if (overStage) {
-            targetStage = overStage;
-        } else {
-            // Dropped on a column droppable
-            targetStage = over.id;
+        if (activeInvestor && STAGES.includes(overStage) && activeInvestor.stage !== overStage) {
+            setRawInvestors((prev) =>
+                prev.map((i) => (i.id === active.id ? { ...i, stage: overStage } : i))
+            );
         }
+    };
 
-        if (targetStage && STAGES.includes(targetStage) && activeInvestor.stage !== targetStage) {
-            await updateInvestor(active.id, { stage: targetStage });
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+        setActiveId(null);
+        if (!over) return;
+
+        const overStage = over.data?.current?.stage || over.id;
+        const activeInvestor = rawInvestors.find((i) => i.id === active.id);
+
+        if (activeInvestor && STAGES.includes(overStage)) {
+            // Persistent update
+            await updateInvestor(active.id, { stage: overStage });
             if (onUpdate) onUpdate();
         }
-        setActiveId(null);
     };
 
     const handleDragStart = (event) => {
@@ -174,6 +178,7 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
         >
             <div className="kanban-board">

@@ -28,39 +28,20 @@ function Tooltip({ content, show, x, y }) {
 }
 
 function StagePill({ value, options, onChange }) {
-    const [open, setOpen] = useState(false);
     const color = STAGE_COLORS[value] || '#71717A';
 
     return (
-        <div className="stage-pill-cell">
-            <div
-                className="stage-pill-badge"
-                style={{
-                    '--pill-color': color,
-                    '--pill-bg': `${color}14`
-                }}
-                onClick={() => setOpen(o => !o)}
+        <div className="status-pill-box" style={{ '--pill-color': color, '--pill-bg': `${color}14` }}>
+            <div className="status-dot"></div>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="status-select"
             >
-                <div className="stage-pill-dot"></div>
-                {value || '—'}
-            </div>
-            {open && (
-                <div className="stage-pill-dropdown">
-                    {options.map(opt => {
-                        const c = STAGE_COLORS[opt] || '#71717A';
-                        return (
-                            <div
-                                key={opt}
-                                className="stage-pill-option"
-                                onClick={() => { onChange(opt); setOpen(false); }}
-                            >
-                                <div className="stage-pill-option-dot" style={{ backgroundColor: c }}></div>
-                                <span className="stage-pill-option-text">{opt}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                {options.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                ))}
+            </select>
         </div>
     );
 }
@@ -84,19 +65,21 @@ function EditableCell({ value, type = 'text', options = [], onChange, onTextMeas
     };
 
     if (type === 'select') {
-        let colorClass = '';
-        if (val === 'Executed' || val === 'Yes') colorClass = 'select-green';
-        if (val === 'Not Sent' || val === 'No') colorClass = 'select-red';
+        const isAffirmative = val === 'Executed' || val === 'Yes';
+        const isNegative = val === 'Not Sent' || val === 'No';
+        const wrapperClass = isAffirmative ? 'bg-affirmative-box' : isNegative ? 'bg-negative-box' : '';
 
         return (
-            <select
-                value={val}
-                onChange={(e) => { setVal(e.target.value); onChange(e.target.value); }}
-                className={`inline-select ${colorClass}`}
-            >
-                <option value="">—</option>
-                {options.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
+            <div className={wrapperClass}>
+                <select
+                    value={val}
+                    onChange={(e) => { setVal(e.target.value); onChange(e.target.value); }}
+                    className="status-select"
+                >
+                    <option value="">—</option>
+                    {options.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+            </div>
         );
     }
 

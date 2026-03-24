@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { supabase } from './lib/supabase';
 import { getInvestors, STAGES, getDaysSinceContact } from './data/store';
 import { exportCSV } from './utils/export';
 import SearchFilter from './components/SearchFilter';
@@ -7,6 +8,7 @@ import InvestorModal from './components/InvestorModal';
 import QuickLogModal from './components/QuickLogModal';
 import InvestorDrawer from './components/InvestorDrawer';
 import ExcelUploadModal from './components/ExcelUploadModal';
+import Login from './components/Login';
 import TableView from './views/TableView';
 import KanbanView from './views/KanbanView';
 import TodoView from './views/TodoView';
@@ -20,6 +22,7 @@ const TABS = [
 ];
 
 export default function App() {
+  const [session, setSession] = useState(null);
   const [activeTab, setActiveTab] = useState('table');
   const [refreshKey, setRefreshKey] = useState(0);
   const [filters, setFilters] = useState({
@@ -37,6 +40,20 @@ export default function App() {
   const [quickLogTarget, setQuickLogTarget] = useState(null);
   const [drawerId, setDrawerId] = useState(null);
   const [drawerTab, setDrawerTab] = useState('details');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
@@ -76,6 +93,10 @@ export default function App() {
     exportCSV(list);
   };
 
+  if (!session) {
+    return <Login />;
+  }
+
   return (
     <div className="app">
       {/* Linear-style Slim Header */}
@@ -102,6 +123,9 @@ export default function App() {
           </nav>
 
           <div className="header-actions">
+            <button className="btn btn-ghost" onClick={() => supabase.auth.signOut()}>
+              Sign Out
+            </button>
             <button className="btn btn-primary" onClick={() => handleOpenModal()}>
               + Add Investor
             </button>
