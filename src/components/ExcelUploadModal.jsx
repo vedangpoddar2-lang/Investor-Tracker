@@ -47,6 +47,35 @@ export default function ExcelUploadModal({ onClose, onSave }) {
         processFile(file);
     };
 
+    const parseExcelDate = (val) => {
+        if (!val) return null;
+        if (val instanceof Date) return val.toISOString().split('T')[0];
+
+        const str = String(val).trim();
+        if (!str) return null;
+
+        // Try standard Date.parse
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+
+        // Handle dd-mmm-yy (e.g., 24-Mar-24)
+        const parts = str.split(/[-/ ]/);
+        if (parts.length === 3) {
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            let day = parseInt(parts[0]);
+            let monthStr = parts[1].toLowerCase();
+            let year = parseInt(parts[2]);
+
+            const monthIdx = months.findIndex(m => monthStr.startsWith(m));
+            if (monthIdx !== -1) {
+                if (year < 100) year += 2000;
+                const finalDate = new Date(year, monthIdx, day);
+                if (!isNaN(finalDate.getTime())) return finalDate.toISOString().split('T')[0];
+            }
+        }
+        return str; // Fallback to raw string if parsing fails
+    };
+
     const processFile = (file) => {
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -66,10 +95,11 @@ export default function ExcelUploadModal({ onClose, onSave }) {
                 const mapped = data.map((row, idx) => {
                     const obj = { id: `parsed-${idx}` };
                     Object.entries(COLUMN_MAPPING).forEach(([excelCol, dbCol]) => {
-                        let val = row[excelCol] || '';
-                        // Basic date formatting if xlsx parsed it as a Date object
-                        if (val instanceof Date) {
-                            val = val.toISOString().split('T')[0];
+                        let val = row[excelCol];
+                        if (dbCol.includes('date')) {
+                            val = parseExcelDate(val);
+                        } else {
+                            val = val || '';
                         }
                         obj[dbCol] = val;
                     });
