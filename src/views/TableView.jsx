@@ -219,9 +219,6 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
     return (
         <div className="table-view">
             <div className="table-actions">
-                <button className="btn btn-primary" onClick={onOpenModal}>
-                    <Plus size={16} /> Add Investor
-                </button>
                 <button className="btn btn-secondary" onClick={() => setShowExcelModal(true)}>
                     <FileSpreadsheet size={14} /> Import Excel
                 </button>

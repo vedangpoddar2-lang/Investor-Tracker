@@ -1,56 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Colors — clean, warm, professional */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F9FAFB;
-  --bg-hover: #F3F4F6;
-  --bg-active: #E5E7EB;
+  /* Core Colors - Serious & Professional (Slate/Navy) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-hover: #f1f5f9;
+  --bg-active: #e2e8f0;
 
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-tertiary: #9CA3AF;
-  --text-inverse: #FFFFFF;
+  --text-primary: #0f172a;
+  /* Slate-900 */
+  --text-secondary: #475569;
+  /* Slate-600 */
+  --text-tertiary: #94a3b8;
+  /* Slate-400 */
+  --text-inverse: #ffffff;
 
-  --border-light: #E5E7EB;
-  --border-medium: #D1D5DB;
-  --border-focus: #6366F1;
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-focus: #1e293b;
 
-  /* Accent palette */
-  --accent-primary: #6366F1;
-  --accent-primary-hover: #5457E5;
-  --accent-primary-light: #EEF2FF;
-  --accent-secondary: #10B981;
-  --accent-secondary-light: #ECFDF5;
-  --accent-warning: #F59E0B;
-  --accent-warning-light: #FFFBEB;
-  --accent-danger: #EF4444;
-  --accent-danger-light: #FEF2F2;
+  /* Accent palette - Professional Navy */
+  --accent-primary: #1e293b;
+  --accent-primary-hover: #0f172a;
+  --accent-primary-light: #f1f5f9;
+  --accent-secondary: #334155;
+  --accent-secondary-light: #f8fafc;
+  --accent-warning: #f59e0b;
+  --accent-warning-light: #fffbeb;
+  --accent-danger: #ef4444;
+  --accent-danger-light: #fef2f2;
 
-  /* Stage colors */
-  --stage-first-reach: #8B5CF6;
-  --stage-follow-up: #3B82F6;
-  --stage-nda: #F59E0B;
-  --stage-diligence: #10B981;
-  --stage-passed: #9CA3AF;
-  --stage-committed: #059669;
+  /* Stage colors - Premium Subtle Variations */
+  --stage-first-reach: #1e293b;
+  /* Navy */
+  --stage-follow-up: #334155;
+  --stage-nda: #b45309;
+  /* Amber */
+  --stage-diligence: #047857;
+  /* Emerald */
+  --stage-passed: #475569;
+  --stage-committed: #0f172a;
 
-  /* Entity colors */
-  --entity-apex: #E11D48;
-  /* Red */
-  --entity-fluidcore: #DB2777;
-  /* Pink */
-  --entity-both: #8B5CF6;
-  /* Purple */
+  /* Entity colors - Matching Logo */
+  --entity-apex: #1e293b;
+  /* Apex Navy */
+  --entity-fluidcore: #334155;
+  --entity-both: #475569;
 
   /* Staleness */
-  --stale-warning: #FEF3C7;
-  --stale-danger: #FEE2E2;
+  --stale-warning: #fefce8;
+  --stale-danger: #fff1f2;
 
   /* Typography */
-  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-xs: 0.75rem;
   --font-sm: 0.8125rem;
   --font-base: 0.875rem;
@@ -70,23 +74,21 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* Radius - Sharper for "Serious" look */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* Shadows - Minimalist */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
 }
 
 *,
@@ -105,7 +107,7 @@ html {
 
 body {
   font-family: var(--font-family);
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   color: var(--text-primary);
   line-height: 1.5;
   min-height: 100vh;
@@ -121,11 +123,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  padding: 8px 16px;
   font-family: var(--font-family);
   font-size: var(--font-sm);
   font-weight: 500;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -134,7 +136,7 @@ body {
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn-primary {
@@ -145,7 +147,7 @@ body {
 
 .btn-primary:hover {
   background: var(--accent-primary-hover);
-  box-shadow: var(--shadow-md);
+  border-color: var(--accent-primary-hover);
 }
 
 .btn-secondary {
@@ -586,9 +588,7 @@ body {
   max-width: 300px;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Stage Pill Badge (inside table cell)
-   ───────────────────────────────────────────────────────── */
+/* ── Stage Pill Badge (inside table cell) ── */
 .stage-pill-td {
   padding: 8px !important;
   text-align: center;
@@ -596,30 +596,35 @@ body {
 
 .stage-pill-cell {
   display: inline-block;
+  position: relative;
 }
 
 .stage-pill-badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
   white-space: nowrap;
-  transition: opacity 0.15s;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
 }
 
 .stage-pill-badge:hover {
-  opacity: 0.8;
+  filter: brightness(0.95);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .stage-pill-dropdown {
   position: absolute;
   top: calc(100% + 4px);
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 200;
-  background: var(--bg-primary);
+  background: white;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
@@ -637,61 +642,64 @@ body {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .stage-pill-option:hover {
-  background: var(--bg-hover);
+  background: var(--bg-tertiary);
 }
 
 .stage-pill-option-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .stage-pill-option-text {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
-/* ─────────────────────────────────────────────────────────
-   Stage Pills Bar (above the table)
-   ───────────────────────────────────────────────────────── */
+/* ── Stage Pills Bar (above the table) ── */
 .stage-pills-bar {
-  background: var(--bg-primary);
+  background: white;
   border-bottom: 1px solid var(--border-light);
-  padding: 16px 24px;
+  padding: 12px 24px;
 }
 
 .stage-pills-inner {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 24px;
+  /* Clearly spaced tabs */
   flex-wrap: wrap;
 }
 
 .stage-pills-total {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-tertiary);
-  margin-right: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  padding-right: 12px;
+  border-right: 1px solid var(--border-light);
 }
 
 .stage-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 6px 10px;
-  border-radius: 999px;
-  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: transform 0.15s;
+  transition: transform 0.15s ease;
+  border: 1px solid transparent;
 }
 
 .stage-pill:hover {
@@ -699,22 +707,20 @@ body {
 }
 
 .stage-pill-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .stage-pill-count {
   font-weight: 700;
-  margin-left: 4px;
-  opacity: 0.8;
-  font-size: 14px;
+  margin-left: 6px;
+  opacity: 0.6;
+  font-size: 11px;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Search input wrapper with icon
-   ───────────────────────────────────────────────────────── */
+/* ── Search filter refinements ── */
 .search-input-wrapper {
   position: relative;
   display: flex;
@@ -723,13 +729,14 @@ body {
 
 .search-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
   color: var(--text-tertiary);
   pointer-events: none;
 }
 
 .search-input-wrapper .search-input {
-  padding-left: 32px;
+  padding-left: 36px !important;
+  background: var(--bg-secondary) !important;
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -739,12 +746,12 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
   background: var(--accent-primary);
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -753,6 +760,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--font-sm);
+  font-size: 12px;
   color: var(--text-secondary);
 }

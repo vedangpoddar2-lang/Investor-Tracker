@@ -53,23 +53,42 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Header */}
+      {/* Slim Premium Header */}
       <header className="app-header">
-        <div className="app-header-titles">
-          <h1 className="app-title">Investor Outreach</h1>
-          <p className="app-subtitle">Apex Data Centers &amp; FluidCore — outreach tracker</p>
-        </div>
-        <nav className="app-tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`app-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
+        <div className="header-container">
+          <div className="brand" onClick={() => setActiveTab('table')}>
+            <div className="logo-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6L12 3L20 6L12 9L4 6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M4 11L12 8L20 11L12 14L4 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M4 16L12 13L20 16L12 19L4 16Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="brand-text">
+              <span className="brand-name">APEX</span>
+              <span className="brand-divider">/</span>
+              <span className="brand-context">INVESTOR TRACKER</span>
+            </div>
+          </div>
+
+          <nav className="header-nav">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                className={`nav-btn ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="header-actions">
+            <button className="btn btn-primary btn-sm" onClick={() => handleOpenModal()}>
+              + Add Investor
             </button>
-          ))}
-        </nav>
+          </div>
+        </div>
       </header>
 
       {/* Stage pills bar */}

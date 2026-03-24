@@ -2,14 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import { getInvestors, STAGES } from '../data/store';
 
 // Stage color mapping
+// Stage color mapping - Subtle & Professional
 const STAGE_COLORS = {
-    'Lead': { bg: '#FEF3C7', text: '#92400E', dot: '#F59E0B' },
-    'Reached out': { bg: '#FEF3C7', text: '#92400E', dot: '#F59E0B' },
-    'Initial call': { bg: '#FEF3C7', text: '#92400E', dot: '#F59E0B' },
-    'Follow up': { bg: '#DBEAFE', text: '#1E40AF', dot: '#3B82F6' },
-    'NDA signed': { bg: '#DBEAFE', text: '#1E40AF', dot: '#3B82F6' },
-    'Shared Info': { bg: '#D1FAE5', text: '#065F46', dot: '#10B981' },
-    'Reviewing': { bg: '#D1FAE5', text: '#065F46', dot: '#10B981' },
+    'Lead': { bg: '#f8fafc', text: '#64748b', dot: '#94a3b8' },
+    'Reached out': { bg: '#f1f5f9', text: '#475569', dot: '#94a3b8' },
+    'Initial call': { bg: '#f1f5f9', text: '#1e293b', dot: '#64748b' },
+    'Follow up': { bg: '#fffbeb', text: '#b45309', dot: '#f59e0b' },
+    'NDA signed': { bg: '#ecfdf5', text: '#047857', dot: '#10b981' },
+    'Shared Info': { bg: '#eff6ff', text: '#1d4ed8', dot: '#3b82f6' },
+    'Reviewing': { bg: '#fdf2f8', text: '#be185d', dot: '#db2777' },
 };
 
 const EXCLUDED = ['Passed', 'Hold'];
