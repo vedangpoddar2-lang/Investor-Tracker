@@ -1,28 +1,6 @@
-// LocalStorage-backed data store for investors, interactions, and to-dos.
+import { supabase } from '../lib/supabase';
 
-const KEYS = {
-  investors: 'ir_investors',
-  interactions: 'ir_interactions',
-  todos: 'ir_todos',
-};
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
-
-function read(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function write(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-// ── Investors ──
+// ── Base Data ──
 
 export const STAGES = [
   'Lead',
@@ -44,147 +22,298 @@ export const ENTITIES = ['Apex', 'FluidCore', 'Both'];
 
 export const INVESTOR_TYPES = ['VC', 'PE', 'Family Office', 'Angel', 'Corporate', 'Other'];
 
-export function getInvestors() {
-  return read(KEYS.investors);
+// ── Investors ──
+
+export async function getInvestors() {
+  const { data, error } = await supabase
+    .from('investors')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error fetching investors:', error);
+    return [];
+  }
+  return data;
 }
 
-export function getInvestor(id) {
-  return read(KEYS.investors).find((i) => i.id === id) || null;
+export async function getInvestor(id) {
+  const { data, error } = await supabase
+    .from('investors')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) {
+    console.error('Error fetching investor:', error);
+    return null;
+  }
+  return data;
 }
 
-export function addInvestor(data) {
-  const investors = read(KEYS.investors);
+export async function addInvestor(data) {
   const investor = {
-    id: generateId(),
-    // Base form fields
     name: data.name || '',
     fund: data.fund || '',
     entity: data.entity || 'Apex',
     stage: data.stage || 'Lead',
-    // Spreadsheet fields
-    primaryContact: data.primaryContact || '',
-    contactDesignation: data.contactDesignation || '',
-    firstOutreachDate: data.firstOutreachDate || '',
-    ndaStatus: data.ndaStatus || '',
-    infoShared: data.infoShared || '',
-    lastInteractionDate: data.lastInteractionDate || '',
-    keyDiscussionPoint: data.keyDiscussionPoint || '',
-    pendingToDos: data.pendingToDos || '',
-    actionOwner: data.actionOwner || '',
-    nextFollowUpDate: data.nextFollowUpDate || '',
-    followUpStatus: data.followUpStatus || '',
+    primary_contact: data.primaryContact || '',
+    contact_designation: data.contactDesignation || '',
+    first_outreach_date: data.firstOutreachDate || null,
+    nda_status: data.ndaStatus || '',
+    info_shared: data.infoShared || '',
+    last_interaction_date: data.lastInteractionDate || null,
+    key_discussion_point: data.keyDiscussionPoint || '',
+    pending_to_dos: data.pendingToDos || '',
+    action_owner: data.actionOwner || '',
+    next_follow_up_date: data.nextFollowUpDate || null,
+    follow_up_status: data.followUpStatus || '',
     remarks: data.remarks || '',
-    // Additional historical fields
     tags: data.tags || [],
-    investorType: data.investorType || '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    investor_type: data.investorType || '',
   };
-  investors.push(investor);
-  write(KEYS.investors, investors);
-  return investor;
+
+  const { data: inserted, error } = await supabase
+    .from('investors')
+    .insert([investor])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding investor:', error);
+    throw error;
+  }
+  return inserted;
 }
 
-export function updateInvestor(id, updates) {
-  const investors = read(KEYS.investors);
-  const idx = investors.findIndex((i) => i.id === id);
-  if (idx === -1) return null;
-  investors[idx] = { ...investors[idx], ...updates, updatedAt: new Date().toISOString() };
-  write(KEYS.investors, investors);
-  return investors[idx];
+export async function updateInvestor(id, updates) {
+  // Map camelCase to snake_case for Supabase if necessary
+  const mappedUpdates = { ...updates };
+  if (updates.primaryContact !== undefined) { mappedUpdates.primary_contact = updates.primaryContact; delete mappedUpdates.primaryContact; }
+  if (updates.contactDesignation !== undefined) { mappedUpdates.contact_designation = updates.contactDesignation; delete mappedUpdates.contactDesignation; }
+  if (updates.firstOutreachDate !== undefined) { mappedUpdates.first_outreach_date = updates.firstOutreachDate; delete mappedUpdates.firstOutreachDate; }
+  if (updates.ndaStatus !== undefined) { mappedUpdates.nda_status = updates.ndaStatus; delete mappedUpdates.ndaStatus; }
+  if (updates.infoShared !== undefined) { mappedUpdates.info_shared = updates.infoShared; delete mappedUpdates.infoShared; }
+  if (updates.lastInteractionDate !== undefined) { mappedUpdates.last_interaction_date = updates.lastInteractionDate; delete mappedUpdates.lastInteractionDate; }
+  if (updates.keyDiscussionPoint !== undefined) { mappedUpdates.key_discussion_point = updates.keyDiscussionPoint; delete mappedUpdates.keyDiscussionPoint; }
+  if (updates.pendingToDos !== undefined) { mappedUpdates.pending_to_dos = updates.pendingToDos; delete mappedUpdates.pendingToDos; }
+  if (updates.actionOwner !== undefined) { mappedUpdates.action_owner = updates.actionOwner; delete mappedUpdates.actionOwner; }
+  if (updates.nextFollowUpDate !== undefined) { mappedUpdates.next_follow_up_date = updates.nextFollowUpDate; delete mappedUpdates.nextFollowUpDate; }
+  if (updates.followUpStatus !== undefined) { mappedUpdates.follow_up_status = updates.followUpStatus; delete mappedUpdates.followUpStatus; }
+  if (updates.investorType !== undefined) { mappedUpdates.investor_type = updates.investorType; delete mappedUpdates.investorType; }
+
+  mappedUpdates.updated_at = new Date().toISOString();
+
+  const { data: updated, error } = await supabase
+    .from('investors')
+    .update(mappedUpdates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating investor:', error);
+    throw error;
+  }
+  return updated;
 }
 
-export function deleteInvestor(id) {
-  const investors = read(KEYS.investors).filter((i) => i.id !== id);
-  write(KEYS.investors, investors);
-  // Also delete related interactions and todos
-  const interactions = read(KEYS.interactions).filter((i) => i.investorId !== id);
-  write(KEYS.interactions, interactions);
-  const todos = read(KEYS.todos).filter((t) => t.investorId !== id);
-  write(KEYS.todos, todos);
+export async function upsertInvestors(investorsArray) {
+  const mappedData = investorsArray.map(data => ({
+    name: data.name || '',
+    fund: data.fund || '',
+    entity: data.entity || 'Apex',
+    stage: data.stage || 'Lead',
+    primary_contact: data.primary_contact || '',
+    contact_designation: data.contact_designation || '',
+    first_outreach_date: data.first_outreach_date || null,
+    nda_status: data.nda_status || '',
+    info_shared: data.info_shared || '',
+    last_interaction_date: data.last_interaction_date || null,
+    key_discussion_point: data.key_discussion_point || '',
+    pending_to_dos: data.pending_to_dos || '',
+    action_owner: data.action_owner || '',
+    next_follow_up_date: data.next_follow_up_date || null,
+    follow_up_status: data.follow_up_status || '',
+    remarks: data.remarks || '',
+    tags: data.tags || [],
+    investor_type: data.investor_type || '',
+    updated_at: new Date().toISOString()
+  }));
+
+  const { data, error } = await supabase
+    .from('investors')
+    .upsert(mappedData, { onConflict: 'name' })
+    .select();
+
+  if (error) {
+    console.error('Error upserting investors:', error);
+    throw error;
+  }
+  return data;
 }
 
-// ── Interactions (meetings, calls, emails) ──
+export async function deleteInvestor(id) {
+  const { error } = await supabase
+    .from('investors')
+    .delete()
+    .eq('id', id);
 
-export function getInteractions(investorId) {
-  return read(KEYS.interactions)
-    .filter((i) => i.investorId === investorId)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (error) {
+    console.error('Error deleting investor:', error);
+    throw error;
+  }
 }
 
-export function getAllInteractions() {
-  return read(KEYS.interactions);
+// ── Interactions ──
+
+export async function getInteractions(investorId) {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .eq('investor_id', investorId)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching interactions:', error);
+    return [];
+  }
+  return data;
 }
 
-export function addInteraction(investorId, data) {
-  const interactions = read(KEYS.interactions);
+export async function getAllInteractions() {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all interactions:', error);
+    return [];
+  }
+  return data;
+}
+
+export async function addInteraction(investorId, data) {
   const interaction = {
-    id: generateId(),
-    investorId,
+    investor_id: investorId,
     date: data.date || new Date().toISOString().split('T')[0],
     notes: data.notes || '',
-    createdAt: new Date().toISOString(),
   };
-  interactions.push(interaction);
-  write(KEYS.interactions, interactions);
+
+  const { data: inserted, error } = await supabase
+    .from('interactions')
+    .insert([interaction])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding interaction:', error);
+    throw error;
+  }
+
   // Update investor's updatedAt
-  updateInvestor(investorId, {});
-  return interaction;
+  await updateInvestor(investorId, {});
+
+  return inserted;
 }
 
-export function deleteInteraction(id) {
-  const interactions = read(KEYS.interactions).filter((i) => i.id !== id);
-  write(KEYS.interactions, interactions);
+export async function deleteInteraction(id) {
+  const { error } = await supabase
+    .from('interactions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting interaction:', error);
+    throw error;
+  }
 }
 
 // ── To-dos ──
 
-export function getTodos(investorId) {
-  return read(KEYS.todos)
-    .filter((t) => t.investorId === investorId)
-    .sort((a, b) => new Date(a.dueDate || '9999') - new Date(b.dueDate || '9999'));
+export async function getTodos(investorId) {
+  const { data, error } = await supabase
+    .from('todos')
+    .select('*')
+    .eq('investor_id', investorId)
+    .order('due_date', { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error('Error fetching todos:', error);
+    return [];
+  }
+  return data;
 }
 
-export function getAllTodos() {
-  return read(KEYS.todos).sort(
-    (a, b) => new Date(a.dueDate || '9999') - new Date(b.dueDate || '9999')
-  );
+export async function getAllTodos() {
+  const { data, error } = await supabase
+    .from('todos')
+    .select('*')
+    .order('due_date', { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error('Error fetching all todos:', error);
+    return [];
+  }
+  return data;
 }
 
-export function addTodo(investorId, data) {
-  const todos = read(KEYS.todos);
+export async function addTodo(investorId, data) {
   const todo = {
-    id: generateId(),
-    investorId,
+    investor_id: investorId,
     text: data.text || '',
-    actionOwner: data.actionOwner || '',
+    action_owner: data.actionOwner || '',
     done: false,
-    dueDate: data.dueDate || '',
-    createdAt: new Date().toISOString(),
+    due_date: data.dueDate || null,
   };
-  todos.push(todo);
-  write(KEYS.todos, todos);
-  return todo;
+
+  const { data: inserted, error } = await supabase
+    .from('todos')
+    .insert([todo])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding todo:', error);
+    throw error;
+  }
+  return inserted;
 }
 
-export function updateTodo(id, updates) {
-  const todos = read(KEYS.todos);
-  const idx = todos.findIndex((t) => t.id === id);
-  if (idx === -1) return null;
-  todos[idx] = { ...todos[idx], ...updates };
-  write(KEYS.todos, todos);
-  return todos[idx];
+export async function updateTodo(id, updates) {
+  const mappedUpdates = { ...updates };
+  if (updates.actionOwner !== undefined) { mappedUpdates.action_owner = updates.actionOwner; delete mappedUpdates.actionOwner; }
+  if (updates.dueDate !== undefined) { mappedUpdates.due_date = updates.dueDate; delete mappedUpdates.dueDate; }
+
+  const { data: updated, error } = await supabase
+    .from('todos')
+    .update(mappedUpdates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating todo:', error);
+    throw error;
+  }
+  return updated;
 }
 
-export function deleteTodo(id) {
-  const todos = read(KEYS.todos).filter((t) => t.id !== id);
-  write(KEYS.todos, todos);
+export async function deleteTodo(id) {
+  const { error } = await supabase
+    .from('todos')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting todo:', error);
+    throw error;
+  }
 }
 
 // ── Tags ──
 
-export function getAllTags() {
-  const investors = read(KEYS.investors);
+export async function getAllTags() {
+  const investors = await getInvestors();
   const tagSet = new Set();
   investors.forEach((inv) => (inv.tags || []).forEach((t) => tagSet.add(t)));
   return [...tagSet].sort();
@@ -192,47 +321,40 @@ export function getAllTags() {
 
 // ── Staleness helper ──
 
-export function getDaysSinceContact(investorId) {
-  const investor = getInvestor(investorId);
+export function getDaysSinceContact(investor) {
   if (!investor) return 999;
 
   // 1. Prefer explicit field from table inline tracking
-  if (investor.lastInteractionDate) {
-    return Math.floor((Date.now() - new Date(investor.lastInteractionDate)) / 86400000);
+  if (investor.last_interaction_date) {
+    return Math.floor((Date.now() - new Date(investor.last_interaction_date)) / 86400000);
   }
 
-  // 2. Fallback to interactions collection
-  const interactions = getInteractions(investorId);
-  if (interactions.length > 0) {
-    const latest = interactions[0].date;
-    return Math.floor((Date.now() - new Date(latest)) / 86400000);
+  // 2. Fallback to first_outreach_date tracking
+  if (investor.first_outreach_date) {
+    return Math.floor((Date.now() - new Date(investor.first_outreach_date)) / 86400000);
   }
 
-  // 3. Fallback to firstOutreachDate tracking
-  if (investor.firstOutreachDate) {
-    return Math.floor((Date.now() - new Date(investor.firstOutreachDate)) / 86400000);
-  }
-
-  // 4. Default baseline fallback
-  return Math.floor((Date.now() - new Date(investor.createdAt)) / 86400000);
+  // 3. Default baseline fallback
+  return Math.floor((Date.now() - new Date(investor.created_at)) / 86400000);
 }
 
 // ── Stats ──
 
-export function getStats() {
-  const investors = getInvestors();
-  const todos = getAllTodos();
+export async function getStats() {
+  const investors = await getInvestors();
+  const todos = await getAllTodos();
   const today = new Date().toISOString().split('T')[0];
 
   return {
     total: investors.length,
     active: investors.filter((i) => !['Passed', 'Hold'].includes(i.stage)).length,
-    ndaSigned: investors.filter((i) => i.ndaStatus === 'Executed').length,
-    infoShared: investors.filter((i) => i.infoShared === 'Yes').length,
-    overdueTodos: todos.filter((t) => !t.done && t.dueDate && t.dueDate < today).length,
+    ndaSigned: investors.filter((i) => i.nda_status === 'Executed').length,
+    infoShared: investors.filter((i) => i.info_shared === 'Yes').length,
+    overdueTodos: todos.filter((t) => !t.done && t.due_date && t.due_date < today).length,
     funnel: STAGES.reduce((acc, stage) => {
       acc[stage] = investors.filter((i) => i.stage === stage).length;
       return acc;
     }, {}),
   };
 }
+

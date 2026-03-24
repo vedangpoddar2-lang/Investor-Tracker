@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getInvestors, STAGES } from '../data/store';
 
 // Stage color mapping
@@ -15,8 +15,17 @@ const STAGE_COLORS = {
 const EXCLUDED = ['Passed', 'Hold'];
 
 export default function StagePillsBar({ refreshKey }) {
+    const [investors, setInvestors] = useState([]);
+
+    useEffect(() => {
+        async function load() {
+            const data = await getInvestors();
+            setInvestors(data);
+        }
+        load();
+    }, [refreshKey]);
+
     const stageCounts = useMemo(() => {
-        const investors = getInvestors();
         return STAGES
             .filter(s => !EXCLUDED.includes(s))
             .map(stage => ({
@@ -24,7 +33,7 @@ export default function StagePillsBar({ refreshKey }) {
                 count: investors.filter(i => i.stage === stage).length,
                 colors: STAGE_COLORS[stage] || { bg: '#F3F4F6', text: '#6B7280', dot: '#9CA3AF' },
             }));
-    }, [refreshKey]);
+    }, [investors]);
 
     const total = stageCounts.reduce((sum, s) => sum + s.count, 0);
 
@@ -47,3 +56,4 @@ export default function StagePillsBar({ refreshKey }) {
         </div>
     );
 }
+

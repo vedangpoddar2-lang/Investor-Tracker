@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable
@@ -7,7 +7,7 @@ import {
     SortableContext, verticalListSortingStrategy, useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock, User } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { getInvestors, updateInvestor, STAGES, getDaysSinceContact, getAllInteractions } from '../data/store';
 import './KanbanView.css';
 
@@ -23,7 +23,7 @@ function KanbanCard({ investor, onClick }) {
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const entityClass = investor.entity.toLowerCase();
+    const entityClass = (investor.entity || '').toLowerCase();
     const daysSince = investor.daysSince;
     const staleClass = daysSince >= 14 ? 'card-stale-danger' : daysSince >= 7 ? 'card-stale-warning' : '';
 
@@ -50,8 +50,8 @@ function KanbanCard({ investor, onClick }) {
                         {new Date(investor.lastContact).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                 )}
-                {investor.investorType && (
-                    <span className="kanban-card-type">{investor.investorType}</span>
+                {investor.investor_type && (
+                    <span className="kanban-card-type">{investor.investor_type}</span>
                 )}
             </div>
         </div>
@@ -71,48 +71,67 @@ function DroppableColumn({ stage, children }) {
 }
 
 export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate }) {
+    const [rawInvestors, setRawInvestors] = useState([]);
+    const [rawInteractions, setRawInteractions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: { distance: 5 },
         })
     );
 
-    const columns = useMemo(() => {
-        let list = getInvestors();
-        const allInteractions = getAllInteractions();
+    useEffect(() => {
+        async function loadData() {
+            setLoading(true);
+            try {
+                const [invs, ixs] = await Promise.all([
+                    getInvestors(),
+                    getAllInteractions()
+                ]);
+                setRawInvestors(invs);
+                setRawInteractions(ixs);
+            } catch (err) {
+                console.error('Failed to load Kanban data:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, [refreshKey]);
 
-        list = list.map((inv) => {
-            const ixs = allInteractions.filter((i) => i.investorId === inv.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const columns = useMemo(() => {
+        let list = rawInvestors.map((inv) => {
+            const ixs = rawInteractions.filter((i) => i.investor_id === inv.id).sort((a, b) => new Date(b.date) - new Date(a.date));
             return {
                 ...inv,
                 lastContact: ixs[0]?.date || null,
-                daysSince: getDaysSinceContact(inv.id),
+                daysSince: getDaysSinceContact(inv),
             };
         });
 
         // Apply filters
         if (filters.search) {
             const q = filters.search.toLowerCase();
-            list = list.filter((i) => i.name.toLowerCase().includes(q) || i.fund.toLowerCase().includes(q));
+            list = list.filter((i) => i.name.toLowerCase().includes(q) || (i.fund || '').toLowerCase().includes(q));
         }
         if (filters.entity) list = list.filter((i) => i.entity === filters.entity);
-        if (filters.nda === 'true') list = list.filter((i) => i.ndaSigned);
-        if (filters.nda === 'false') list = list.filter((i) => !i.ndaSigned);
+        if (filters.ndaStatus) list = list.filter((i) => i.nda_status === filters.ndaStatus);
         if (filters.tag) list = list.filter((i) => (i.tags || []).includes(filters.tag));
 
         return STAGES.map((stage) => ({
             stage,
             investors: list.filter((i) => i.stage === stage),
         }));
-    }, [filters, refreshKey]);
+    }, [rawInvestors, rawInteractions, filters]);
 
-    const handleDragEnd = (event) => {
+    const handleDragEnd = async (event) => {
         const { active, over } = event;
         if (!over) return;
 
         // Find which column the item was dropped into
         const overStage = over.data?.current?.stage;
-        const activeInvestor = getInvestors().find((i) => i.id === active.id);
+        const activeInvestor = rawInvestors.find((i) => i.id === active.id);
         if (!activeInvestor) return;
 
         // If dropped on a card, use that card's stage
@@ -125,19 +144,26 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
         }
 
         if (targetStage && STAGES.includes(targetStage) && activeInvestor.stage !== targetStage) {
-            updateInvestor(active.id, { stage: targetStage });
+            await updateInvestor(active.id, { stage: targetStage });
             if (onUpdate) onUpdate();
         }
     };
 
     const stageColors = {
-        'First Reach': 'var(--stage-first-reach)',
-        'Follow-up': 'var(--stage-follow-up)',
-        'NDA': 'var(--stage-nda)',
-        'Diligence': 'var(--stage-diligence)',
-        'Passed': 'var(--stage-passed)',
-        'Committed': 'var(--stage-committed)',
+        'Lead': '#FEF3C7',
+        'Reached out': '#FEF3C7',
+        'Initial call': '#FEF3C7',
+        'Follow up': '#DBEAFE',
+        'NDA signed': '#DBEAFE',
+        'Shared Info': '#D1FAE5',
+        'Reviewing': '#D1FAE5',
+        'Passed': '#FEE2E2',
+        'Hold': '#F3F4F6',
     };
+
+    if (loading && rawInvestors.length === 0) {
+        return <div className="kanban-loading">Loading Kanban board...</div>;
+    }
 
     return (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
@@ -145,7 +171,7 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
                 {columns.map((col) => (
                     <div key={col.stage} className="kanban-column">
                         <div className="kanban-column-header">
-                            <div className="kanban-column-dot" style={{ background: stageColors[col.stage] }}></div>
+                            <div className="kanban-column-dot" style={{ background: stageColors[col.stage] || '#ccc' }}></div>
                             <span className="kanban-column-title">{col.stage}</span>
                             <span className="kanban-column-count">{col.investors.length}</span>
                         </div>

@@ -7,12 +7,17 @@ export default function QuickLogModal({ investorId, investorName, onClose, onSav
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!notes.trim()) return;
-        addInteraction(investorId, { date, notes: notes.trim() });
-        onSave();
-        onClose();
+        try {
+            await addInteraction(investorId, { date, notes: notes.trim() });
+            if (onSave) onSave();
+            onClose();
+        } catch (err) {
+            console.error('Failed to log interaction:', err);
+            alert('Error logging interaction.');
+        }
     };
 
     return (
@@ -72,3 +77,4 @@ export default function QuickLogModal({ investorId, investorName, onClose, onSav
         </AnimatePresence>
     );
 }
+

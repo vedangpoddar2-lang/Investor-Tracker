@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, MessageSquarePlus, Download, ArrowUpDown } from 'lucide-react';
+import { Plus, MessageSquarePlus, Download, ArrowUpDown, FileSpreadsheet } from 'lucide-react';
 import { getInvestors, getAllInteractions, getAllTodos, getDaysSinceContact, updateInvestor, STAGES, NDA_STATUSES, INFO_SHARED_STATUSES, ENTITIES } from '../data/store';
 import { exportCSV } from '../utils/export';
+import ExcelUploadModal from '../components/ExcelUploadModal';
 import './TableView.css';
 
 // Stage color pill config
@@ -106,18 +107,40 @@ function EditableCell({ value, type = 'text', options = [], onChange }) {
 export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate }) {
     const [sortCol, setSortCol] = useState('name');
     const [sortDir, setSortDir] = useState('asc');
+    const [rawInvestors, setRawInvestors] = useState([]);
+    const [rawInteractions, setRawInteractions] = useState([]);
+    const [rawTodos, setRawTodos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showExcelModal, setShowExcelModal] = useState(false);
+
+    useEffect(() => {
+        async function loadData() {
+            setLoading(true);
+            try {
+                const [invs, ixs, tds] = await Promise.all([
+                    getInvestors(),
+                    getAllInteractions(),
+                    getAllTodos()
+                ]);
+                setRawInvestors(invs);
+                setRawInteractions(ixs);
+                setRawTodos(tds);
+            } catch (err) {
+                console.error('Failed to load table data:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, [refreshKey]);
 
     const investors = useMemo(() => {
-        let list = getInvestors();
-        const allInteractions = getAllInteractions();
-        const allTodos = getAllTodos();
-
-        list = list.map((inv) => {
-            const ixs = allInteractions.filter((i) => i.investorId === inv.id);
-            const pendingTodos = allTodos.filter((t) => t.investorId === inv.id && !t.done);
+        let list = rawInvestors.map((inv) => {
+            const ixs = rawInteractions.filter((i) => i.investor_id === inv.id);
+            const pendingTodos = rawTodos.filter((t) => t.investor_id === inv.id && !t.done);
             return {
                 ...inv,
-                daysSince: getDaysSinceContact(inv.id),
+                daysSince: getDaysSinceContact(inv),
                 interactionCount: ixs.length,
                 _pendingTodosCount: pendingTodos.length,
                 _pendingTodosText: pendingTodos.map(t => t.text).join(', '),
@@ -129,14 +152,14 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
             const q = filters.search.toLowerCase();
             list = list.filter(inv =>
                 inv.name.toLowerCase().includes(q) ||
-                (inv.primaryContact || '').toLowerCase().includes(q) ||
-                (inv.keyDiscussionPoint || '').toLowerCase().includes(q)
+                (inv.primary_contact || '').toLowerCase().includes(q) ||
+                (inv.key_discussion_point || '').toLowerCase().includes(q)
             );
         }
         if (filters.entity) list = list.filter(i => i.entity === filters.entity);
         if (filters.stage) list = list.filter(i => i.stage === filters.stage);
-        if (filters.ndaStatus) list = list.filter(i => i.ndaStatus === filters.ndaStatus);
-        if (filters.infoShared) list = list.filter(i => i.infoShared === filters.infoShared);
+        if (filters.ndaStatus) list = list.filter(i => i.nda_status === filters.ndaStatus);
+        if (filters.infoShared) list = list.filter(i => i.info_shared === filters.infoShared);
 
         // Sort
         list.sort((a, b) => {
@@ -151,34 +174,34 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         });
 
         return list;
-    }, [filters, sortCol, sortDir, refreshKey]);
+    }, [rawInvestors, rawInteractions, rawTodos, filters, sortCol, sortDir]);
 
     const handleSort = (col) => {
         if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
         else { setSortCol(col); setSortDir('asc'); }
     };
 
-    const handleUpdateField = (id, field, value) => {
-        updateInvestor(id, { [field]: value });
+    const handleUpdateField = async (id, field, value) => {
+        await updateInvestor(id, { [field]: value });
         if (onUpdate) onUpdate();
     };
 
     const columns = [
         { key: 'name', label: 'Investor', type: 'text', minWidth: 150 },
-        { key: 'primaryContact', label: 'Primary Contact', type: 'text', minWidth: 140 },
-        { key: 'contactDesignation', label: 'Designation', type: 'text', minWidth: 140 },
+        { key: 'primary_contact', label: 'Primary Contact', type: 'text', minWidth: 140 },
+        { key: 'contact_designation', label: 'Designation', type: 'text', minWidth: 140 },
         { key: 'entity', label: 'Reached By', type: 'select', options: ENTITIES, minWidth: 110 },
-        { key: 'firstOutreachDate', label: 'First Outreach', type: 'date', minWidth: 130 },
+        { key: 'first_outreach_date', label: 'First Outreach', type: 'date', minWidth: 130 },
         { key: 'stage', label: 'Current Status', type: 'stage', options: STAGES, minWidth: 160 },
-        { key: 'ndaStatus', label: 'NDA Status', type: 'select', options: NDA_STATUSES, minWidth: 135 },
-        { key: 'infoShared', label: 'Info Shared', type: 'select', options: INFO_SHARED_STATUSES, minWidth: 125 },
-        { key: 'lastInteractionDate', label: 'Last Interaction', type: 'date', minWidth: 130 },
+        { key: 'nda_status', label: 'NDA Status', type: 'select', options: NDA_STATUSES, minWidth: 135 },
+        { key: 'info_shared', label: 'Info Shared', type: 'select', options: INFO_SHARED_STATUSES, minWidth: 125 },
+        { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', minWidth: 130 },
         { key: 'daysSince', label: 'Days Since', type: 'readonly', minWidth: 100 },
-        { key: 'keyDiscussionPoint', label: 'Key Discussion Point', type: 'text', minWidth: 200 },
-        { key: 'pendingToDos', label: 'Pending To Dos', type: 'todos', minWidth: 180 },
-        { key: 'actionOwner', label: 'Action Owner', type: 'text', minWidth: 130 },
-        { key: 'nextFollowUpDate', label: 'Next Follow-up', type: 'date', minWidth: 130 },
-        { key: 'followUpStatus', label: 'Follow-up Status', type: 'text', minWidth: 140 },
+        { key: 'key_discussion_point', label: 'Key Discussion Point', type: 'text', minWidth: 200 },
+        { key: 'pending_to_dos', label: 'Pending To Dos', type: 'todos', minWidth: 180 },
+        { key: 'action_owner', label: 'Action Owner', type: 'text', minWidth: 130 },
+        { key: 'next_follow_up_date', label: 'Next Follow-up', type: 'date', minWidth: 130 },
+        { key: 'follow_up_status', label: 'Follow-up Status', type: 'text', minWidth: 140 },
         { key: 'remarks', label: 'Remarks', type: 'text', minWidth: 180 },
         { key: 'actions', label: '', type: 'actions', minWidth: 50 },
     ];
@@ -189,11 +212,18 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         return '';
     };
 
+    if (loading && rawInvestors.length === 0) {
+        return <div className="loading-state">Loading data from Supabase...</div>;
+    }
+
     return (
         <div className="table-view">
             <div className="table-actions">
                 <button className="btn btn-primary" onClick={onOpenModal}>
                     <Plus size={16} /> Add Investor
+                </button>
+                <button className="btn btn-secondary" onClick={() => setShowExcelModal(true)}>
+                    <FileSpreadsheet size={14} /> Import Excel
                 </button>
                 <button className="btn btn-secondary" onClick={() => exportCSV(investors)}>
                     <Download size={14} /> Export CSV
@@ -226,7 +256,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                             {investors.length === 0 ? (
                                 <tr>
                                     <td colSpan={columns.length} className="table-empty">
-                                        No investors found. Add your first one!
+                                        {loading ? 'Refreshing...' : 'No investors found. Add your first one!'}
                                     </td>
                                 </tr>
                             ) : (
@@ -278,7 +308,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                                             }
 
                                             // Pending To Dos — computed from actual todos
-                                            if (col.key === 'pendingToDos') {
+                                            if (col.key === 'pending_to_dos') {
                                                 const hasTodos = inv._pendingTodosCount > 0;
                                                 return (
                                                     <td key={col.key}>
@@ -332,6 +362,15 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                     </tbody>
                 </table>
             </div>
+
+            <AnimatePresence>
+                {showExcelModal && (
+                    <ExcelUploadModal
+                        onClose={() => setShowExcelModal(false)}
+                        onSave={onUpdate}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

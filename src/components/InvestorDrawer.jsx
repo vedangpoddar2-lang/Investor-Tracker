@@ -23,86 +23,110 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
     const [editing, setEditing] = useState(false);
     const [editForm, setEditForm] = useState({});
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [loading, setLoading] = useState(true);
     const drawerRef = useRef(null);
 
-    const refresh = () => {
-        const inv = getInvestor(investorId);
-        if (!inv) { onClose(); return; }
-        setInvestor(inv);
-        setInteractions(getInteractions(investorId));
-        setTodos(getTodos(investorId));
+    const refresh = async () => {
+        setLoading(true);
+        try {
+            const inv = await getInvestor(investorId);
+            if (!inv) { onClose(); return; }
+            setInvestor(inv);
+
+            const [ixs, tds] = await Promise.all([
+                getInteractions(investorId),
+                getTodos(investorId)
+            ]);
+            setInteractions(ixs);
+            setTodos(tds);
+        } catch (err) {
+            console.error('Error refreshing drawer:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useEffect(() => { refresh(); }, [investorId]);
+    useEffect(() => {
+        if (investorId) refresh();
+    }, [investorId]);
 
-    const handleAddInteraction = (e) => {
+    const handleAddInteraction = async (e) => {
         e.preventDefault();
         if (!newNote.trim()) return;
-        addInteraction(investorId, { date: newNoteDate, notes: newNote.trim() });
+        await addInteraction(investorId, { date: newNoteDate, notes: newNote.trim() });
         setNewNote('');
         setNewNoteDate(new Date().toISOString().split('T')[0]);
-        refresh();
-        onUpdate();
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
-    const handleAddTodo = (e) => {
+    const handleAddTodo = async (e) => {
         e.preventDefault();
         if (!newTodoText.trim()) return;
-        addTodo(investorId, { text: newTodoText.trim(), dueDate: newTodoDue, actionOwner: newTodoOwner.trim() });
+        await addTodo(investorId, { text: newTodoText.trim(), dueDate: newTodoDue, actionOwner: newTodoOwner.trim() });
         setNewTodoText('');
         setNewTodoDue('');
         setNewTodoOwner('');
-        refresh();
-        onUpdate();
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
-    const handleToggleTodo = (id, done) => {
-        updateTodo(id, { done: !done });
-        refresh();
-        onUpdate();
+    const handleToggleTodo = async (id, done) => {
+        await updateTodo(id, { done: !done });
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
-    const handleDeleteInteraction = (id) => {
-        deleteInteraction(id);
-        refresh();
-        onUpdate();
+    const handleDeleteInteraction = async (id) => {
+        await deleteInteraction(id);
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
-    const handleDeleteTodo = (id) => {
-        deleteTodo(id);
-        refresh();
-        onUpdate();
+    const handleDeleteTodo = async (id) => {
+        await deleteTodo(id);
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
-    const handleDeleteInvestor = () => {
-        deleteInvestor(investorId);
-        onDelete();
+    const handleDeleteInvestor = async () => {
+        await deleteInvestor(investorId);
+        if (onDelete) onDelete();
         onClose();
     };
 
     const startEdit = () => {
         setEditForm({
-            name: investor.name, fund: investor.fund, entity: investor.entity,
-            stage: investor.stage, investorType: investor.investorType,
-            checkSize: investor.checkSize, introSource: investor.introSource,
-            tags: investor.tags || [], ndaSigned: investor.ndaSigned, infoShared: investor.infoShared,
+            name: investor.name,
+            fund: investor.fund,
+            entity: investor.entity,
+            stage: investor.stage,
+            investorType: investor.investor_type,
+            checkSize: investor.check_size,
+            introSource: investor.intro_source,
+            tags: investor.tags || [],
+            ndaStatus: investor.nda_status,
+            infoShared: investor.info_shared,
+            primaryContact: investor.primary_contact,
+            contactDesignation: investor.contact_designation,
         });
         setEditing(true);
     };
 
-    const saveEdit = () => {
-        updateInvestor(investorId, editForm);
+    const saveEdit = async () => {
+        await updateInvestor(investorId, editForm);
         setEditing(false);
-        refresh();
-        onUpdate();
+        await refresh();
+        if (onUpdate) onUpdate();
     };
 
+    if (!investor && loading) return <div className="drawer-loading">Loading...</div>;
     if (!investor) return null;
 
-    const daysSince = getDaysSinceContact(investorId);
+    const daysSince = getDaysSinceContact(investor);
     const staleClass = daysSince >= 14 ? 'stale-danger' : daysSince >= 7 ? 'stale-warning' : '';
-    const stageClass = investor.stage.toLowerCase().replace(/\s+/g, '-');
-    const entityClass = investor.entity.toLowerCase();
+    const stageClass = (investor.stage || '').toLowerCase().replace(/\s+/g, '-');
+    const entityClass = (investor.entity || '').toLowerCase();
 
     return (
         <>
@@ -140,7 +164,7 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
                         <div className="drawer-badges">
                             <span className={`badge badge-${entityClass}`}>{investor.entity}</span>
                             <span className={`badge badge-stage badge-${stageClass}`}>{investor.stage}</span>
-                            {staleClass && (
+                            {daysSince < 999 && (
                                 <span className={`badge badge-stale ${staleClass}`}>
                                     <Clock size={10} /> {daysSince}d ago
                                 </span>
@@ -214,49 +238,37 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
                                         <TagInput tags={editForm.tags}
                                             onChange={(tags) => setEditForm({ ...editForm, tags })} />
                                     </div>
-                                    <div style={{ display: 'flex', gap: 'var(--space-6)', marginTop: 'var(--space-3)' }}>
-                                        <div className="checkbox-wrapper"
-                                            onClick={() => setEditForm({ ...editForm, ndaSigned: !editForm.ndaSigned })}>
-                                            <input type="checkbox" checked={!!editForm.ndaSigned} readOnly />
-                                            <span style={{ fontSize: 'var(--font-sm)' }}>NDA Signed</span>
-                                        </div>
-                                        <div className="checkbox-wrapper"
-                                            onClick={() => setEditForm({ ...editForm, infoShared: !editForm.infoShared })}>
-                                            <input type="checkbox" checked={!!editForm.infoShared} readOnly />
-                                            <span style={{ fontSize: 'var(--font-sm)' }}>Info Shared</span>
-                                        </div>
-                                    </div>
                                 </div>
                             )}
 
                             {!editing && (
                                 <div className="drawer-section">
                                     <div className="drawer-meta-grid">
-                                        {investor.investorType && (
+                                        {investor.investor_type && (
                                             <div className="meta-item">
                                                 <span className="meta-label">Type</span>
-                                                <span>{investor.investorType}</span>
+                                                <span>{investor.investor_type}</span>
                                             </div>
                                         )}
-                                        {investor.checkSize && (
+                                        {investor.check_size && (
                                             <div className="meta-item">
                                                 <span className="meta-label">Check Size</span>
-                                                <span>{investor.checkSize}</span>
+                                                <span>{investor.check_size}</span>
                                             </div>
                                         )}
-                                        {investor.introSource && (
+                                        {investor.intro_source && (
                                             <div className="meta-item">
                                                 <span className="meta-label">Intro</span>
-                                                <span>{investor.introSource}</span>
+                                                <span>{investor.intro_source}</span>
                                             </div>
                                         )}
                                         <div className="meta-item">
                                             <span className="meta-label">NDA</span>
-                                            <span>{investor.ndaSigned ? '✅ Signed' : '—'}</span>
+                                            <span>{investor.nda_status || '—'}</span>
                                         </div>
                                         <div className="meta-item">
                                             <span className="meta-label">Info</span>
-                                            <span>{investor.infoShared ? '✅ Shared' : '—'}</span>
+                                            <span>{investor.info_shared || '—'}</span>
                                         </div>
                                     </div>
                                     {investor.tags?.length > 0 && (
@@ -283,14 +295,14 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
                                         </div>
                                         <div className="drawer-todo-content">
                                             <span className="drawer-todo-text">{todo.text}</span>
-                                            {todo.dueDate && (
-                                                <span className={`drawer-todo-due ${!todo.done && todo.dueDate < new Date().toISOString().split('T')[0] ? 'overdue' : ''}`}>
-                                                    {todo.dueDate}
+                                            {todo.due_date && (
+                                                <span className={`drawer-todo-due ${!todo.done && todo.due_date < new Date().toISOString().split('T')[0] ? 'overdue' : ''}`}>
+                                                    {todo.due_date}
                                                 </span>
                                             )}
-                                            {todo.actionOwner && (
+                                            {todo.action_owner && (
                                                 <span className="drawer-todo-due" style={{ marginLeft: 8, color: 'var(--accent-primary)' }}>
-                                                    {todo.actionOwner}
+                                                    {todo.action_owner}
                                                 </span>
                                             )}
                                         </div>
@@ -390,3 +402,4 @@ export default function InvestorDrawer({ investorId, onClose, onUpdate, onDelete
         </>
     );
 }
+

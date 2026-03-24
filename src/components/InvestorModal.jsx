@@ -11,27 +11,32 @@ export default function InvestorModal({ investor, onClose, onSave }) {
         fund: investor?.fund || '',
         entity: investor?.entity || 'Apex',
         stage: investor?.stage || 'Lead',
-        investorType: investor?.investorType || '',
-        checkSize: investor?.checkSize || '',
-        introSource: investor?.introSource || '',
+        investorType: investor?.investor_type || '', // Snake_case from DB
+        checkSize: investor?.check_size || '',
+        introSource: investor?.intro_source || '',
         tags: investor?.tags || [],
-        ndaStatus: investor?.ndaStatus || '',
-        infoShared: investor?.infoShared || '',
-        primaryContact: investor?.primaryContact || '',
-        contactDesignation: investor?.contactDesignation || '',
+        ndaStatus: investor?.nda_status || '',
+        infoShared: investor?.info_shared || '',
+        primaryContact: investor?.primary_contact || '',
+        contactDesignation: investor?.contact_designation || '',
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) return;
 
-        if (isEdit) {
-            updateInvestor(investor.id, form);
-        } else {
-            addInvestor(form);
+        try {
+            if (isEdit) {
+                await updateInvestor(investor.id, form);
+            } else {
+                await addInvestor(form);
+            }
+            if (onSave) onSave();
+            onClose();
+        } catch (err) {
+            console.error('Failed to save investor:', err);
+            alert('Error saving investor. Please check the console.');
         }
-        onSave();
-        onClose();
     };
 
     const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -181,3 +186,4 @@ export default function InvestorModal({ investor, onClose, onSave }) {
         </AnimatePresence>
     );
 }
+

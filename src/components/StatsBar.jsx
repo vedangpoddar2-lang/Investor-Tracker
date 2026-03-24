@@ -8,7 +8,11 @@ export default function StatsBar({ refreshKey }) {
     const [stats, setStats] = useState(null);
 
     useEffect(() => {
-        setStats(getStats());
+        async function load() {
+            const data = await getStats();
+            setStats(data);
+        }
+        load();
     }, [refreshKey]);
 
     if (!stats) return null;
@@ -45,3 +49,4 @@ export default function StatsBar({ refreshKey }) {
         </div>
     );
 }
+

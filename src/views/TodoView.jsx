@@ -1,37 +1,63 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Clock, User, AlertTriangle } from 'lucide-react';
-import { getAllTodos, getInvestor, updateTodo, deleteTodo } from '../data/store';
+import { getAllTodos, getInvestor, updateTodo, deleteTodo, getInvestors } from '../data/store';
 import './TodoView.css';
 
 export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
+    const [rawTodos, setRawTodos] = useState([]);
+    const [rawInvestors, setRawInvestors] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function load() {
+            setLoading(true);
+            try {
+                const [tds, invs] = await Promise.all([
+                    getAllTodos(),
+                    getInvestors()
+                ]);
+                setRawTodos(tds);
+                setRawInvestors(invs);
+            } catch (err) {
+                console.error('Failed to load todos:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
+    }, [refreshKey]);
+
     const todos = useMemo(() => {
-        const all = getAllTodos();
         const today = new Date().toISOString().split('T')[0];
 
-        return all.map((todo) => {
-            const investor = getInvestor(todo.investorId);
+        return rawTodos.map((todo) => {
+            const investor = rawInvestors.find(i => i.id === todo.investor_id);
             return {
                 ...todo,
                 investorName: investor?.name || 'Unknown',
                 investorFund: investor?.fund || '',
-                isOverdue: !todo.done && todo.dueDate && todo.dueDate < today,
+                isOverdue: !todo.done && todo.due_date && todo.due_date < today,
             };
         });
-    }, [refreshKey]);
+    }, [rawTodos, rawInvestors]);
 
     const openTodos = todos.filter((t) => !t.done);
     const doneTodos = todos.filter((t) => t.done);
 
-    const handleToggle = (id, done) => {
-        updateTodo(id, { done: !done });
-        onUpdate();
+    const handleToggle = async (id, done) => {
+        await updateTodo(id, { done: !done });
+        if (onUpdate) onUpdate();
     };
 
-    const handleDelete = (id) => {
-        deleteTodo(id);
-        onUpdate();
+    const handleDelete = async (id) => {
+        await deleteTodo(id);
+        if (onUpdate) onUpdate();
     };
+
+    if (loading && rawTodos.length === 0) {
+        return <div className="todo-loading">Loading to-dos...</div>;
+    }
 
     return (
         <div className="todo-view">
@@ -63,7 +89,7 @@ export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
                                     <span className="todo-row-text">{todo.text}</span>
                                     <span
                                         className="todo-row-investor"
-                                        onClick={() => onOpenDrawer(todo.investorId)}
+                                        onClick={() => onOpenDrawer(todo.investor_id)}
                                     >
                                         <User size={10} /> {todo.investorName}
                                         {todo.investorFund ? ` · ${todo.investorFund}` : ''}
@@ -71,14 +97,14 @@ export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
                                 </div>
                                 <div className="todo-row-meta">
                                     {todo.isOverdue && <AlertTriangle size={14} className="todo-overdue-icon" />}
-                                    {todo.dueDate && (
+                                    {todo.due_date && (
                                         <span className={`todo-row-due ${todo.isOverdue ? 'overdue' : ''}`}>
-                                            <Clock size={10} /> {todo.dueDate}
+                                            <Clock size={10} /> {todo.due_date}
                                         </span>
                                     )}
-                                    {todo.actionOwner && (
+                                    {todo.action_owner && (
                                         <span className="todo-row-due" style={{ color: 'var(--accent-primary)' }}>
-                                            👤 {todo.actionOwner}
+                                            👤 {todo.action_owner}
                                         </span>
                                     )}
                                 </div>
@@ -97,7 +123,7 @@ export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
                                         </div>
                                         <div className="todo-row-content">
                                             <span className="todo-row-text">{todo.text}</span>
-                                            <span className="todo-row-investor" onClick={() => onOpenDrawer(todo.investorId)}>
+                                            <span className="todo-row-investor" onClick={() => onOpenDrawer(todo.investor_id)}>
                                                 <User size={10} /> {todo.investorName}
                                             </span>
                                         </div>
@@ -114,3 +140,4 @@ export default function TodoView({ onOpenDrawer, refreshKey, onUpdate }) {
         </div>
     );
 }
+
