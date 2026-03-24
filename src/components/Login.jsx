@@ -17,7 +17,7 @@ export default function Login() {
         setMessage(null);
         try {
             if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -25,7 +25,11 @@ export default function Login() {
                     }
                 });
                 if (error) throw error;
-                setMessage('Check your email for the confirmation link!');
+
+                // If email confirmation is disabled, Supabase returns a session immediately
+                if (!data.session) {
+                    setMessage('Registration successful! Please sign in.');
+                }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
