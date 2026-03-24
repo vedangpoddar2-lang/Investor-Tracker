@@ -47,6 +47,7 @@ function StagePill({ value, options, onChange }) {
 }
 
 function EditableCell({ value, type = 'text', options = [], onChange, onTextMeasure }) {
+    const [isEditing, setIsEditing] = useState(false);
     const [val, setVal] = useState(value || '');
 
     useEffect(() => {
@@ -54,7 +55,16 @@ function EditableCell({ value, type = 'text', options = [], onChange, onTextMeas
     }, [value]);
 
     const handleBlur = () => {
+        setIsEditing(false);
         if (val !== (value || '')) onChange(val);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') handleBlur();
+        if (e.key === 'Escape') {
+            setVal(value || '');
+            setIsEditing(false);
+        }
     };
 
     const handleMouseEnter = (e) => {
@@ -98,16 +108,28 @@ function EditableCell({ value, type = 'text', options = [], onChange, onTextMeas
         );
     }
 
+    if (isEditing) {
+        return (
+            <input
+                autoFocus
+                type="text"
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="inline-input"
+            />
+        );
+    }
+
     return (
-        <input
-            type="text"
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            onBlur={handleBlur}
+        <div
+            className={`cell-display ${val ? '' : 'empty-cell'}`}
+            onClick={() => setIsEditing(true)}
             onMouseEnter={handleMouseEnter}
-            className={`inline-input ${val ? '' : 'empty-cell'}`}
-            placeholder="—"
-        />
+        >
+            {val || '—'}
+        </div>
     );
 }
 
