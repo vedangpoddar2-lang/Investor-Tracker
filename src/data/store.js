@@ -146,10 +146,10 @@ export async function upsertInvestors(investorsArray) {
 
   if (error) {
     console.error('Error upserting investors:', error);
-    throw error;
   }
-  return data;
+  return { data, error };
 }
+
 
 export async function deleteInvestor(id) {
   const { error } = await supabase

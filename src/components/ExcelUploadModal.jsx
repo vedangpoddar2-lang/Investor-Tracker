@@ -146,12 +146,14 @@ export default function ExcelUploadModal({ onClose, onSave }) {
             // Only upsert rows that are new or updated
             const toUpsert = parsedRows.filter(r => r._status !== 'no-change');
             if (toUpsert.length > 0) {
-                await upsertInvestors(toUpsert);
+                const { error } = await upsertInvestors(toUpsert);
+                if (error) throw error;
             }
             onSave();
             onClose();
         } catch (err) {
-            setError('Failed to save data to Supabase.');
+            console.error('Supabase Import Error:', err);
+            setError(`Failed to save data: ${err.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
