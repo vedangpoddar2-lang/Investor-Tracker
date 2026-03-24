@@ -40,6 +40,7 @@ export default function App() {
   const [quickLogTarget, setQuickLogTarget] = useState(null);
   const [drawerId, setDrawerId] = useState(null);
   const [drawerTab, setDrawerTab] = useState('details');
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -93,6 +94,18 @@ export default function App() {
     exportCSV(list);
   };
 
+  const handleDeleteSelected = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} investors?`)) return;
+    try {
+      const { deleteInvestors } = await import('./data/store');
+      await deleteInvestors(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      refresh();
+    } catch (err) {
+      alert('Failed to delete investors');
+    }
+  };
+
   if (!session) {
     return <Login />;
   }
@@ -141,8 +154,10 @@ export default function App() {
         <SearchFilter
           filters={filters}
           onFilterChange={setFilters}
-          onImport={activeTab === 'table' ? () => setShowInvestorModal(true) : null}
+          onImport={activeTab === 'table' ? () => setShowExcelModal(true) : null}
           onExport={activeTab === 'table' ? handleExport : null}
+          selectedCount={selectedIds.size}
+          onDeleteSelected={handleDeleteSelected}
         />
       )}
 
@@ -157,6 +172,8 @@ export default function App() {
             refreshKey={refreshKey}
             onUpdate={refresh}
             setShowExcelModal={setShowExcelModal}
+            selectedIds={selectedIds}
+            setSelectedIds={setSelectedIds}
           />
         )}
         {activeTab === 'kanban' && (

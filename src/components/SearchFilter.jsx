@@ -1,8 +1,8 @@
-import { Search, FileSpreadsheet, Download } from 'lucide-react';
+import { Search, FileSpreadsheet, Download, Trash2 } from 'lucide-react';
 import { STAGES, ENTITIES, NDA_STATUSES } from '../data/store';
 import './SearchFilter.css';
 
-export default function SearchFilter({ filters, onFilterChange, onImport, onExport }) {
+export default function SearchFilter({ filters, onFilterChange, onImport, onExport, selectedCount, onDeleteSelected }) {
     return (
         <div className="search-filter">
             <div className="search-filter-container">
@@ -45,6 +45,11 @@ export default function SearchFilter({ filters, onFilterChange, onImport, onExpo
                 </div>
 
                 <div className="action-group">
+                    {selectedCount > 0 && (
+                        <button className="btn btn-danger btn-sm" onClick={onDeleteSelected}>
+                            <Trash2 size={14} /> Delete ({selectedCount})
+                        </button>
+                    )}
                     <button className="btn btn-ghost" onClick={onImport}>
                         <FileSpreadsheet size={14} /> Import Excel
                     </button>

@@ -87,6 +87,14 @@
     z-index: 100;
 }
 
+.spreadsheet-table tr.row-selected td {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.spreadsheet-table tr.row-selected:hover td {
+    background-color: rgba(59, 130, 246, 0.08);
+}
+
 /* ── Specialized Columns ── */
 .col-readonly {
     color: var(--text-secondary);

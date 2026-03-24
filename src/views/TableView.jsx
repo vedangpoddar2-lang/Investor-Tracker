@@ -148,7 +148,7 @@ const DEFAULT_COLUMNS = [
     { key: 'remarks', label: 'Remarks', type: 'text', width: 200 },
 ];
 
-export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate, setShowExcelModal }) {
+export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate, setShowExcelModal, selectedIds, setSelectedIds }) {
     const [sortCol, setSortCol] = useState('name');
     const [sortDir, setSortDir] = useState('asc');
     const [rawInvestors, setRawInvestors] = useState([]);
@@ -265,6 +265,21 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         window.addEventListener('mouseup', onMouseUp);
     };
 
+    const toggleSelectAll = () => {
+        if (selectedIds.size === investors.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(investors.map(i => i.id)));
+        }
+    };
+
+    const toggleSelectOne = (id) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
     const handleDragStart = (e, key) => {
         e.dataTransfer.setData('colKey', key);
     };
@@ -301,6 +316,13 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                 <table className="spreadsheet-table" style={{ width: 'max-content' }}>
                     <thead>
                         <tr>
+                            <th style={{ width: 40, padding: '0 10px', textAlign: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedIds.size > 0 && selectedIds.size === investors.length}
+                                    onChange={toggleSelectAll}
+                                />
+                            </th>
                             {orderedColumns.map((col) => (
                                 <th
                                     key={col.key}
@@ -329,12 +351,19 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                             {investors.map((inv, idx) => (
                                 <motion.tr
                                     key={inv.id}
-                                    className="data-row"
+                                    className={`data-row ${selectedIds.has(inv.id) ? 'row-selected' : ''}`}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ delay: idx * 0.01 }}
                                 >
+                                    <td style={{ textAlign: 'center', padding: '0 10px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(inv.id)}
+                                            onChange={() => toggleSelectOne(inv.id)}
+                                        />
+                                    </td>
                                     {orderedColumns.map((col) => {
                                         // Days since — color coded thresholds
                                         if (col.key === 'daysSince') {

@@ -116,6 +116,7 @@ export async function updateInvestor(id, updates) {
 
 export async function upsertInvestors(investorsArray) {
   const mappedData = investorsArray.map(data => ({
+    id: data._existingId || undefined, // Use existing ID if we have it
     name: data.name || '',
     fund: data.fund || '',
     entity: data.entity || 'Apex',
@@ -139,13 +140,26 @@ export async function upsertInvestors(investorsArray) {
 
   const { data, error } = await supabase
     .from('investors')
-    .upsert(mappedData, { onConflict: 'name' })
+    .upsert(mappedData, { onConflict: 'name' }) // Still use name as conflict target
     .select();
 
   if (error) {
     console.error('Error upserting investors:', error);
   }
   return { data, error };
+}
+
+export async function deleteInvestors(ids) {
+  if (!ids || ids.length === 0) return;
+  const { error } = await supabase
+    .from('investors')
+    .delete()
+    .in('id', ids);
+
+  if (error) {
+    console.error('Error deleting multiple investors:', error);
+    throw error;
+  }
 }
 
 
