@@ -1,3 +1,12 @@
+import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUpDown, MessageSquarePlus } from 'lucide-react';
+import { getInvestors, getAllInteractions, getAllTodos, getDaysSinceContact, updateInvestor, STAGES, NDA_STATUSES, INFO_SHARED_STATUSES, ENTITIES } from '../data/store';
+import { exportCSV } from '../utils/export';
+import ExcelUploadModal from '../components/ExcelUploadModal';
+import SearchFilter from '../components/SearchFilter';
+import './TableView.css';
+
 // Stage color mapping - Muted & Professional (Linear style)
 const STAGE_COLORS = {
     'Not Contacted': '#71717A',

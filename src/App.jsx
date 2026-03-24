@@ -6,6 +6,7 @@ import SearchFilter from './components/SearchFilter';
 import InvestorModal from './components/InvestorModal';
 import QuickLogModal from './components/QuickLogModal';
 import InvestorDrawer from './components/InvestorDrawer';
+import ExcelUploadModal from './components/ExcelUploadModal';
 import TableView from './views/TableView';
 import KanbanView from './views/KanbanView';
 import TodoView from './views/TodoView';
@@ -31,6 +32,7 @@ export default function App() {
 
   // Modals
   const [showInvestorModal, setShowInvestorModal] = useState(false);
+  const [showExcelModal, setShowExcelModal] = useState(false);
   const [editingInvestor, setEditingInvestor] = useState(null);
   const [quickLogTarget, setQuickLogTarget] = useState(null);
   const [drawerId, setDrawerId] = useState(null);
@@ -167,6 +169,15 @@ export default function App() {
             investorId={quickLogTarget.id}
             investorName={quickLogTarget.name}
             onClose={() => setQuickLogTarget(null)}
+            onSave={refresh}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showExcelModal && (
+          <ExcelUploadModal
+            onClose={() => setShowExcelModal(false)}
             onSave={refresh}
           />
         )}
