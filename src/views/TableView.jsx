@@ -84,14 +84,14 @@ function EditableCell({ value, type = 'text', options = [], onChange, onTextMeas
     }
 
     if (type === 'date') {
-        const displayDate = val ? new Date(val).toLocaleDateString() : '—';
+        const displayDate = val ? new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
         return (
-            <div className="date-cell">
+            <div className="date-cell" onClick={(e) => e.currentTarget.querySelector('input').showPicker()}>
                 <input
                     type="date"
                     value={val}
                     onChange={(e) => { setVal(e.target.value); onChange(e.target.value); }}
-                    className="inline-input date-input-hidden"
+                    className="date-input-hidden"
                 />
                 <span className="date-display">{displayDate}</span>
             </div>
@@ -373,7 +373,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                                             (col.key === 'info_shared' && inv[col.key] === 'Yes');
 
                                         return (
-                                            <td key={col.key} className={isAffirmative ? 'bg-affirmative' : ''}>
+                                            <td key={col.key}>
                                                 <EditableCell
                                                     value={inv[col.key]}
                                                     type={col.type}
