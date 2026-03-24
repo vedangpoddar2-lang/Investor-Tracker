@@ -386,8 +386,11 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                                         }
 
                                         // Default editable cell
+                                        const isAffirmative = (col.key === 'nda_status' && inv[col.key] === 'Executed') ||
+                                            (col.key === 'info_shared' && inv[col.key] === 'Yes');
+
                                         return (
-                                            <td key={col.key}>
+                                            <td key={col.key} className={isAffirmative ? 'bg-affirmative' : ''}>
                                                 <EditableCell
                                                     value={inv[col.key]}
                                                     type={col.type}

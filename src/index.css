@@ -629,11 +629,11 @@ body {
   top: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 200;
+  z-index: 1000;
   background: white;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -681,6 +681,7 @@ body {
   margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-8);
 }
 
@@ -717,8 +718,17 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 0;
+  padding: 6px 12px;
+  background: var(--pill-bg);
+  border-radius: 6px;
+  border: 1px solid transparent;
   cursor: default;
+  transition: all 0.2s ease;
+}
+
+.stage-pill:hover {
+  border-color: var(--pill-color);
+  transform: translateY(-1px);
 }
 
 .stage-pill-dot {
@@ -785,4 +795,13 @@ body {
   white-space: nowrap;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.bg-affirmative {
+  background-color: #D1FAE5 !important;
+}
+
+.bg-affirmative input,
+.bg-affirmative select {
+  background-color: transparent !important;
 }

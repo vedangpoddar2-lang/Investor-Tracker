@@ -144,3 +144,16 @@
     text-align: center;
     color: var(--text-tertiary);
 }
+
+.kanban-card-drag-overlay {
+    z-index: 1000;
+    pointer-events: none;
+    cursor: grabbing;
+}
+
+.kanban-card-drag-overlay .kanban-card {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: var(--accent-primary);
+    transform: rotate(2deg) scale(1.02);
+    cursor: grabbing;
+}

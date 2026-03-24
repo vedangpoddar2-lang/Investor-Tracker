@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-    DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable
+    DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay
 } from '@dnd-kit/core';
 import {
     SortableContext, verticalListSortingStrategy, useSortable
@@ -74,6 +74,7 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
     const [rawInvestors, setRawInvestors] = useState([]);
     const [rawInteractions, setRawInteractions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeId, setActiveId] = useState(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -147,6 +148,11 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
             await updateInvestor(active.id, { stage: targetStage });
             if (onUpdate) onUpdate();
         }
+        setActiveId(null);
+    };
+
+    const handleDragStart = (event) => {
+        setActiveId(event.active.id);
     };
 
     const stageColors = {
@@ -164,7 +170,12 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
     }
 
     return (
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
             <div className="kanban-board">
                 {columns.map((col) => (
                     <div key={col.stage} className="kanban-column">
@@ -197,6 +208,17 @@ export default function KanbanView({ filters, onOpenDrawer, refreshKey, onUpdate
                     </div>
                 ))}
             </div>
+
+            <DragOverlay>
+                {activeId ? (
+                    <div className="kanban-card-drag-overlay">
+                        <KanbanCard
+                            investor={rawInvestors.find(i => i.id === activeId)}
+                            onClick={null}
+                        />
+                    </div>
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 }
