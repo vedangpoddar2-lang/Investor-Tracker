@@ -146,7 +146,7 @@ const DEFAULT_COLUMNS = [
     { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', width: 130 },
     { key: 'key_discussion_point', label: 'Key Discussion Point', type: 'text', width: 220 },
     { key: 'pending_to_dos', label: 'Pending To Dos', type: 'todos', width: 220 },
-    { key: 'action_owner', label: 'Action Owner', type: 'text', width: 130 },
+    { key: 'action_owner', label: 'Action Owner', type: 'readonly', width: 130 },
     { key: 'action_pending_from', label: 'Action Pending From', type: 'text', width: 160 },
     { key: 'next_follow_up_date', label: 'Next Follow Up', type: 'date', width: 130 },
     { key: 'follow_up_status', label: 'Follow Up Status', type: 'followup', options: FOLLOW_UP_STATUSES, width: 140 },
@@ -226,6 +226,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         let list = rawInvestors.map((inv) => {
             const ixs = rawInteractions.filter((i) => i.investor_id === inv.id);
             const pendingTodos = rawTodos.filter((t) => t.investor_id === inv.id && !t.done);
+            const owners = [...new Set(pendingTodos.map((t) => t.action_owner).filter(Boolean))].join(', ');
             return {
                 ...inv,
                 daysSince: getDaysSinceContact(inv),
@@ -233,6 +234,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                 _pendingTodosCount: pendingTodos.length,
                 _pendingTodosText: pendingTodos.map(t => t.text).join(', '),
                 _computedFollowUp: computeFollowUpStatus(inv),
+                action_owner: owners, // Auto-computed from open todos
             };
         });
 
