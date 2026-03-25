@@ -173,29 +173,11 @@ export default function ExcelUploadModal({ onClose, onSave }) {
     const handleCommit = async () => {
         setLoading(true);
         try {
-            // Only upsert rows that are new or updated
             const toUpsert = parsedRows.filter(r => r._status !== 'no-change');
             if (toUpsert.length > 0) {
                 const { error } = await upsertInvestors(toUpsert);
                 if (error) throw error;
             }
-
-            // After upsert, create todo rows for any row that had pending_to_dos text
-            const rowsWithTodos = parsedRows.filter(r => r.pending_to_dos && String(r.pending_to_dos).trim());
-            if (rowsWithTodos.length > 0) {
-                // Refetch investors to get real DB IDs (especially for newly inserted ones)
-                const freshInvestors = await getInvestors();
-                await Promise.all(
-                    rowsWithTodos.map(row => {
-                        const match = freshInvestors.find(
-                            inv => inv.name.toLowerCase() === row.name.toLowerCase()
-                        );
-                        if (match) return createTodosFromImport(match.id, row.pending_to_dos);
-                        return Promise.resolve();
-                    })
-                );
-            }
-
             onSave();
             onClose();
         } catch (err) {
