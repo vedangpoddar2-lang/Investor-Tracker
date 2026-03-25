@@ -93,17 +93,22 @@ export default function ExcelUploadModal({ onClose, onSave }) {
                     return;
                 }
 
-                // Map columns
+                // Map columns — case-insensitive + trimmed matching
                 const mapped = data.map((row, idx) => {
                     const obj = { id: `parsed-${idx}` };
+                    // Build a lowercase+trimmed key map so column names match regardless of case
+                    const rowNorm = Object.fromEntries(
+                        Object.entries(row).map(([k, v]) => [k.toLowerCase().trim(), v])
+                    );
                     Object.entries(COLUMN_MAPPING).forEach(([excelCol, dbCol]) => {
-                        let val = row[excelCol];
+                        let val = rowNorm[excelCol.toLowerCase().trim()];
                         if (dbCol.includes('date')) {
                             val = parseExcelDate(val);
                         } else {
-                            val = val || '';
+                            val = val !== undefined && val !== null ? String(val) : '';
                         }
-                        obj[dbCol] = val;
+                        // Don't overwrite an already-set value (handles alias mappings)
+                        if (!obj[dbCol]) obj[dbCol] = val;
                     });
                     return obj;
                 });
