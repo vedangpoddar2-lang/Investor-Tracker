@@ -12,7 +12,9 @@ export const STAGES = [
   'Closed / Dropped'
 ];
 
-export const NDA_STATUSES = ['Executed', 'Under Review', 'Not Sent'];
+export const NDA_STATUSES = ['Executed', 'Sent', 'Under Review', 'Not Sent'];
+
+export const FOLLOW_UP_STATUSES = ['Follow Up', 'Pending'];
 
 export const INFO_SHARED_STATUSES = ['Yes', 'No'];
 

@@ -117,16 +117,17 @@
 
 /* ── Stale Thresholds (Days Since) ── */
 .spreadsheet-table td.stale-none {
-    color: var(--text-tertiary);
-}
-
-.spreadsheet-table td.stale-subtle {
     color: var(--status-sage);
     font-weight: 500;
 }
 
-.spreadsheet-table td.stale-warning {
-    color: var(--status-amber);
+.spreadsheet-table td.stale-yellow {
+    color: #CA8A04;
+    font-weight: 500;
+}
+
+.spreadsheet-table td.stale-orange {
+    color: #C2410C;
     font-weight: 600;
 }
 
@@ -134,6 +135,7 @@
     color: var(--status-rose);
     font-weight: 700;
 }
+
 
 /* ── Tooltip ── */
 .custom-tooltip {

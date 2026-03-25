@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpDown, MessageSquarePlus } from 'lucide-react';
-import { getInvestors, getAllInteractions, getAllTodos, getDaysSinceContact, updateInvestor, STAGES, NDA_STATUSES, INFO_SHARED_STATUSES, ENTITIES } from '../data/store';
+import { getInvestors, getAllInteractions, getAllTodos, getDaysSinceContact, updateInvestor, STAGES, NDA_STATUSES, INFO_SHARED_STATUSES, ENTITIES, FOLLOW_UP_STATUSES } from '../data/store';
 import { exportCSV } from '../utils/export';
 import ExcelUploadModal from '../components/ExcelUploadModal';
 import SearchFilter from '../components/SearchFilter';
@@ -141,10 +141,15 @@ const DEFAULT_COLUMNS = [
     { key: 'stage', label: 'Status', type: 'stage', options: STAGES, width: 160 },
     { key: 'nda_status', label: 'NDA Status', type: 'select', options: NDA_STATUSES, width: 135 },
     { key: 'info_shared', label: 'Info Shared', type: 'select', options: INFO_SHARED_STATUSES, width: 125 },
+    { key: 'first_outreach_date', label: 'First Outreach', type: 'date', width: 130 },
     { key: 'daysSince', label: 'Days Since', type: 'readonly', width: 90 },
+    { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', width: 130 },
     { key: 'key_discussion_point', label: 'Key Discuss', type: 'text', width: 220 },
     { key: 'pending_to_dos', label: 'To-dos', type: 'todos', width: 180 },
-    { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', width: 130 },
+    { key: 'action_owner', label: 'Action Owner', type: 'text', width: 130 },
+    { key: 'action_pending_from', label: 'Action Pending From', type: 'text', width: 160 },
+    { key: 'next_follow_up_date', label: 'Next Follow Up', type: 'date', width: 130 },
+    { key: 'follow_up_status', label: 'Follow Up Status', type: 'followup', options: FOLLOW_UP_STATUSES, width: 140 },
     { key: 'remarks', label: 'Remarks', type: 'text', width: 200 },
 ];
 
@@ -197,6 +202,14 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         loadData();
     }, [refreshKey]);
 
+    // Auto-compute follow_up_status from next_follow_up_date if not manually set
+    const computeFollowUpStatus = (inv) => {
+        if (inv.follow_up_status) return inv.follow_up_status; // manual override wins
+        if (!inv.next_follow_up_date) return 'Pending';
+        const today = new Date().toISOString().split('T')[0];
+        return today > inv.next_follow_up_date ? 'Follow Up' : 'Pending';
+    };
+
     const investors = useMemo(() => {
         let list = rawInvestors.map((inv) => {
             const ixs = rawInteractions.filter((i) => i.investor_id === inv.id);
@@ -207,6 +220,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                 interactionCount: ixs.length,
                 _pendingTodosCount: pendingTodos.length,
                 _pendingTodosText: pendingTodos.map(t => t.text).join(', '),
+                _computedFollowUp: computeFollowUpStatus(inv),
             };
         });
 
@@ -297,10 +311,10 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
     };
 
     const staleClass = (days) => {
-        if (days >= 15) return 'stale-critical';
-        if (days >= 10) return 'stale-warning';
-        if (days >= 5) return 'stale-subtle';
-        return 'stale-none';
+        if (days >= 16) return 'stale-critical';
+        if (days >= 11) return 'stale-orange';
+        if (days >= 6) return 'stale-yellow';
+        return 'stale-none'; // < 6 days = green
     };
 
     const orderedColumns = columnOrder.map(key => DEFAULT_COLUMNS.find(c => c.key === key)).filter(Boolean);
@@ -418,6 +432,25 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                                                 </td>
                                             );
                                         }
+
+                                        // Follow Up Status — auto-computed, overridable
+                                        if (col.key === 'follow_up_status') {
+                                            const displayVal = inv._computedFollowUp;
+                                            const isFollowUp = displayVal === 'Follow Up';
+                                            return (
+                                                <td key={col.key} className={isFollowUp ? 'followup-overdue' : 'followup-pending'}>
+                                                    <select
+                                                        value={displayVal}
+                                                        onChange={(e) => handleUpdateField(inv.id, 'follow_up_status', e.target.value)}
+                                                        className="status-select"
+                                                        style={{ color: isFollowUp ? '#C2410C' : '#15803D', fontWeight: 500 }}
+                                                    >
+                                                        {col.options.map(o => <option key={o} value={o}>{o}</option>)}
+                                                    </select>
+                                                </td>
+                                            );
+                                        }
+
 
                                         // Default editable cell
                                         const isAffirmative = (col.key === 'nda_status' && inv[col.key] === 'Executed') ||
