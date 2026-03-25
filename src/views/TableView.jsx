@@ -153,6 +153,9 @@ const DEFAULT_COLUMNS = [
     { key: 'remarks', label: 'Remarks', type: 'text', width: 200 },
 ];
 
+// Bump this when adding/removing columns to force a localStorage reset
+const COLUMN_SCHEMA_VERSION = '2';
+
 export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate, setShowExcelModal, selectedIds, setSelectedIds }) {
     const [sortCol, setSortCol] = useState('name');
     const [sortDir, setSortDir] = useState('asc');
@@ -164,6 +167,11 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
 
     // Advanced Table States
     const [columnWidths, setColumnWidths] = useState(() => {
+        if (localStorage.getItem('apex_col_version') !== COLUMN_SCHEMA_VERSION) {
+            localStorage.removeItem('apex_table_widths');
+            localStorage.removeItem('apex_table_order');
+            localStorage.setItem('apex_col_version', COLUMN_SCHEMA_VERSION);
+        }
         const saved = localStorage.getItem('apex_table_widths');
         return saved ? JSON.parse(saved) : DEFAULT_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: col.width }), {});
     });
@@ -172,7 +180,6 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         const saved = localStorage.getItem('apex_table_order');
         if (!saved) return defaultKeys;
         const savedOrder = JSON.parse(saved);
-        // Append any new columns not yet in the saved order
         const newCols = defaultKeys.filter(k => !savedOrder.includes(k));
         return [...savedOrder, ...newCols];
     });
