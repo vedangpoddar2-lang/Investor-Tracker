@@ -116,21 +116,21 @@
 }
 
 /* ── Stale Thresholds (Days Since) ── */
-.stale-none {
+.spreadsheet-table td.stale-none {
     color: var(--text-tertiary);
 }
 
-.stale-subtle {
+.spreadsheet-table td.stale-subtle {
     color: var(--status-sage);
     font-weight: 500;
 }
 
-.stale-warning {
+.spreadsheet-table td.stale-warning {
     color: var(--status-amber);
     font-weight: 600;
 }
 
-.stale-critical {
+.spreadsheet-table td.stale-critical {
     color: var(--status-rose);
     font-weight: 700;
 }
