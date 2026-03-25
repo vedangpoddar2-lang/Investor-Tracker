@@ -145,7 +145,7 @@ const DEFAULT_COLUMNS = [
     { key: 'daysSince', label: 'Days Since', type: 'readonly', width: 90 },
     { key: 'last_interaction_date', label: 'Last Interaction', type: 'date', width: 130 },
     { key: 'key_discussion_point', label: 'Key Discussion Point', type: 'text', width: 220 },
-    { key: 'pending_to_dos', label: 'Pending To Dos', type: 'text', width: 220 },
+    { key: 'pending_to_dos', label: 'Pending To Dos', type: 'todos', width: 220 },
     { key: 'action_owner', label: 'Action Owner', type: 'text', width: 130 },
     { key: 'action_pending_from', label: 'Action Pending From', type: 'text', width: 160 },
     { key: 'next_follow_up_date', label: 'Next Follow Up', type: 'date', width: 130 },
