@@ -13,14 +13,12 @@ import TableView from './views/TableView';
 import KanbanView from './views/KanbanView';
 import TodoView from './views/TodoView';
 import StagePillsBar from './components/StagePillsBar';
-import EmailInboxView from './views/EmailInboxView';
 import './App.css';
 
 const TABS = [
   { id: 'table', label: 'Table' },
   { id: 'kanban', label: 'Pipeline' },
   { id: 'todos', label: 'To-dos' },
-  { id: 'email', label: 'Email Inbox' },
 ];
 
 export default function App() {
@@ -192,9 +190,6 @@ export default function App() {
             refreshKey={refreshKey}
             onUpdate={refresh}
           />
-        )}
-        {activeTab === 'email' && (
-          <EmailInboxView onUpdate={refresh} />
         )}
       </main>
 
