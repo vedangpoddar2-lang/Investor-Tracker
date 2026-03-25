@@ -169,6 +169,28 @@ export async function upsertInvestors(investorsArray) {
   return { data: true, error: null };
 }
 
+// Creates individual todo rows from a comma/newline-separated text (used by Excel import)
+export async function createTodosFromImport(investorId, todosText) {
+  if (!investorId || !todosText || !String(todosText).trim()) return;
+
+  const items = String(todosText)
+    .split(/[,;\n]/)
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+
+  if (items.length === 0) return;
+
+  const { error } = await supabase
+    .from('todos')
+    .insert(items.map(text => ({
+      investor_id: investorId,
+      text,
+      done: false,
+    })));
+
+  if (error) console.error('Error creating todos from import:', error);
+}
+
 export async function deleteInvestors(ids) {
   if (!ids || ids.length === 0) return;
   const { error } = await supabase
