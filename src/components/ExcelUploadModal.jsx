@@ -18,7 +18,9 @@ const COLUMN_MAPPING = {
     'Last Interaction': 'last_interaction_date',
     'Key Discussion Point': 'key_discussion_point',
     'Pending To Dos': 'pending_to_dos',
+    'Pending To-Dos': 'pending_to_dos',   // alias for hyphenated spelling
     'Action Owner': 'action_owner',
+    'Action Pending From': 'action_pending_from',
     'Next Follow-up': 'next_follow_up_date',
     'Follow-up Status': 'follow_up_status',
     'Remarks': 'remarks',

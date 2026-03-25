@@ -135,6 +135,7 @@ export async function upsertInvestors(investorsArray) {
     key_discussion_point: data.key_discussion_point || '',
     pending_to_dos: data.pending_to_dos || '',
     action_owner: data.action_owner || '',
+    action_pending_from: data.action_pending_from || '',
     next_follow_up_date: data.next_follow_up_date || null,
     follow_up_status: data.follow_up_status || '',
     remarks: data.remarks || '',
