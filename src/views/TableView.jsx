@@ -168,8 +168,13 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
         return saved ? JSON.parse(saved) : DEFAULT_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: col.width }), {});
     });
     const [columnOrder, setColumnOrder] = useState(() => {
+        const defaultKeys = DEFAULT_COLUMNS.map(c => c.key);
         const saved = localStorage.getItem('apex_table_order');
-        return saved ? JSON.parse(saved) : DEFAULT_COLUMNS.map(c => c.key);
+        if (!saved) return defaultKeys;
+        const savedOrder = JSON.parse(saved);
+        // Append any new columns not yet in the saved order
+        const newCols = defaultKeys.filter(k => !savedOrder.includes(k));
+        return [...savedOrder, ...newCols];
     });
     const [tooltip, setTooltip] = useState({ show: false, content: '', x: 0, y: 0 });
 
