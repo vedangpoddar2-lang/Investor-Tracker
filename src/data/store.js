@@ -356,18 +356,27 @@ export async function getAllTags() {
 export function getDaysSinceContact(investor) {
   if (!investor) return 999;
 
+  // Helper: parse a date string in LOCAL time (not UTC) to avoid timezone offset
+  const parseLocalDate = (str) => {
+    const s = str.includes('T') ? str : str + 'T00:00:00';
+    return new Date(s);
+  };
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   // 1. Prefer explicit field from table inline tracking
   if (investor.last_interaction_date) {
-    return Math.floor((Date.now() - new Date(investor.last_interaction_date)) / 86400000);
+    return Math.round((todayStart - parseLocalDate(investor.last_interaction_date)) / 86400000);
   }
 
   // 2. Fallback to first_outreach_date tracking
   if (investor.first_outreach_date) {
-    return Math.floor((Date.now() - new Date(investor.first_outreach_date)) / 86400000);
+    return Math.round((todayStart - parseLocalDate(investor.first_outreach_date)) / 86400000);
   }
 
   // 3. Default baseline fallback
-  return Math.floor((Date.now() - new Date(investor.created_at)) / 86400000);
+  return Math.round((todayStart - parseLocalDate(investor.created_at)) / 86400000);
 }
 
 // ── Stats ──
