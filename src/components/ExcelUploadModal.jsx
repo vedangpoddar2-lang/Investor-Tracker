@@ -18,11 +18,16 @@ const COLUMN_MAPPING = {
     'Last Interaction': 'last_interaction_date',
     'Key Discussion Point': 'key_discussion_point',
     'Pending To Dos': 'pending_to_dos',
-    'Pending To-Dos': 'pending_to_dos',   // alias for hyphenated spelling
+    'Pending To-Dos': 'pending_to_dos',   // alias
+    'To-Dos': 'pending_to_dos',           // alias
     'Action Owner': 'action_owner',
+    'Action owner': 'action_owner',       // alias
+    'Owner': 'action_owner',              // alias
     'Action Pending From': 'action_pending_from',
     'Next Follow-up': 'next_follow_up_date',
+    'Next Followup': 'next_follow_up_date', // alias
     'Follow-up Status': 'follow_up_status',
+    'Followup Status': 'follow_up_status',  // alias
     'Remarks': 'remarks',
     'Type': 'investor_type'
 };
