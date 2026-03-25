@@ -115,12 +115,15 @@ export async function updateInvestor(id, updates) {
 }
 
 export async function upsertInvestors(investorsArray) {
-  const mappedData = investorsArray.map(data => ({
-    id: data._existingId || undefined, // Use existing ID if we have it
+  const toInsert = investorsArray.filter(d => !d._existingId);
+  const toUpdate = investorsArray.filter(d => !!d._existingId);
+
+  const buildPayload = (data, includeId = false) => ({
+    ...(includeId ? { id: data._existingId } : {}),
     name: data.name || '',
     fund: data.fund || '',
     entity: data.entity || 'Apex',
-    stage: data.stage || 'Lead',
+    stage: data.stage || 'Not Contacted',
     primary_contact: data.primary_contact || '',
     contact_designation: data.contact_designation || '',
     first_outreach_date: data.first_outreach_date || null,
@@ -135,18 +138,33 @@ export async function upsertInvestors(investorsArray) {
     remarks: data.remarks || '',
     tags: data.tags || [],
     investor_type: data.investor_type || '',
-    updated_at: new Date().toISOString()
-  }));
+    updated_at: new Date().toISOString(),
+  });
 
-  const { data, error } = await supabase
-    .from('investors')
-    .upsert(mappedData, { onConflict: 'name' }) // Still use name as conflict target
-    .select();
-
-  if (error) {
-    console.error('Error upserting investors:', error);
+  // INSERT new investors (no id sent — Postgres auto-generates UUID)
+  if (toInsert.length > 0) {
+    const { error } = await supabase
+      .from('investors')
+      .insert(toInsert.map(d => buildPayload(d, false)));
+    if (error) {
+      console.error('Error inserting investors:', error);
+      return { data: null, error };
+    }
   }
-  return { data, error };
+
+  // UPDATE existing investors one by one using their known UUID
+  for (const d of toUpdate) {
+    const { error } = await supabase
+      .from('investors')
+      .update(buildPayload(d, false))
+      .eq('id', d._existingId);
+    if (error) {
+      console.error('Error updating investor:', error);
+      return { data: null, error };
+    }
+  }
+
+  return { data: true, error: null };
 }
 
 export async function deleteInvestors(ids) {
