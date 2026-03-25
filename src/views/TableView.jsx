@@ -154,7 +154,7 @@ const DEFAULT_COLUMNS = [
 ];
 
 // Bump this when adding/removing columns to force a localStorage reset
-const COLUMN_SCHEMA_VERSION = '2';
+const COLUMN_SCHEMA_VERSION = '3';
 
 export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickLog, refreshKey, onUpdate, setShowExcelModal, selectedIds, setSelectedIds }) {
     const [sortCol, setSortCol] = useState('name');
