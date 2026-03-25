@@ -232,7 +232,7 @@ export default function TableView({ filters, onOpenDrawer, onOpenModal, onQuickL
                 daysSince: getDaysSinceContact(inv),
                 interactionCount: ixs.length,
                 _pendingTodosCount: pendingTodos.length,
-                _pendingTodosText: pendingTodos.map(t => t.text).join(', '),
+                _pendingTodosText: pendingTodos.length > 0 ? pendingTodos[0].text : '',
                 _computedFollowUp: computeFollowUpStatus(inv),
                 action_owner: owners, // Auto-computed from open todos
             };
